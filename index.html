@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>鹈鹕骑自行车 · 中转站同屏对比</title>
+<style>
+:root{color-scheme:dark}
+body{font:14px/1.5 system-ui,"Microsoft YaHei",sans-serif;background:#111;color:#eee;margin:16px}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:#888;margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:14px}
+.card{background:#1b1b1b;border:1px solid #333;border-radius:8px;overflow:hidden}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;cursor:pointer}
+.hd:hover{background:#262626}
+.t{font-weight:600;letter-spacing:.5px}
+.time{font-variant-numeric:tabular-nums;color:#ffb454}
+.note{color:#888;font-size:12px}
+.card.base{border-color:#2ea04366;grid-column:1/-1;justify-self:center;width:min(430px,100%)}.card.base .t{color:#7ee787}
+iframe{width:100%;height:340px;border:0;border-top:1px solid #333;background:#fff}
+a{color:#6cb6ff;font-size:12px;text-decoration:none;white-space:nowrap}
+</style></head><body>
+<h1>鹈鹕骑自行车 · 中转站同屏对比</h1>
+<p class="sub">按耗时升序 · 站点名已打码（OpenAI 为基线）· 点标题或「独览」新窗口打开</p>
+<div class="grid" id="g"></div>
+<script>
+const D=[{"masked": "OpenAI", "secs": 613, "note": "", "base": true, "file": "./s01/pelican-ride.html"}, {"masked": "x••••••价", "secs": 204, "note": "", "base": false, "file": "./s02/pelican-bike.html"}, {"masked": "c••••••s", "secs": 206, "note": "", "base": false, "file": "./s03/pelican-bicycle-animation.html"}, {"masked": "S••••••e", "secs": 287, "note": "", "base": false, "file": "./s04/pelican-bicycle.html"}, {"masked": "m••••••o", "secs": 341, "note": "", "base": false, "file": "./s05/pelican-bicycle-animation.html"}, {"masked": "a••••••s", "secs": 349, "note": "", "base": false, "file": "./s06/html-svg-2d-2/pelican-bike-animation.html"}, {"masked": "g••••••o", "secs": 375, "note": "正astra", "base": false, "file": "./s07/pelican-ride.html"}, {"masked": "c••••••o", "secs": 413, "note": "", "base": false, "file": "./s08/pelican_bike_animation.html"}, {"masked": "g••••••s", "secs": 441, "note": "疑似sol", "base": false, "file": "./s09/pelican-bike.html"}, {"masked": "A••••••y", "secs": 446, "note": "", "base": false, "file": "./s10/pelican-bicycle.html"}, {"masked": "A••••••r", "secs": 505, "note": "", "base": false, "file": "./s11/pelican-bike.html"}, {"masked": "a••••••o", "secs": 644, "note": "", "base": false, "file": "./s12/pelican-bike-animation.html"}];
+document.getElementById("g").innerHTML=D.map(x=>{
+  const t=x.secs==null?"?":`${Math.floor(x.secs/60)}分${x.secs%60}秒`;
+  return `<div class="card${x.base?" base":""}">
+    <div class="hd" onclick="window.open('${x.file}','_blank')">
+      <span><span class="t">${x.masked}</span> <span class="time">${t}</span>${x.note?` <span class="note">${x.note}</span>`:""}</span>
+      <a href="${x.file}" target="_blank">独览 ↗</a></div>
+    <iframe loading="lazy" src="${x.file}"></iframe></div>`}).join("");
+</script></body></html>
