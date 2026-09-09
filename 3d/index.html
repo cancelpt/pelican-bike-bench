@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#142626" />
+    <meta name="description" content="逐风海岸 — 一只鹈鹕的黄金时刻。Three.js 实时三维骑行短片。" />
+    <title>逐风海岸 · PELAGIC</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <script type="module" crossorigin src="./assets/index-DwqqT3B9.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/three-engine-C6vKtf_b.js">
+    <link rel="modulepreload" crossorigin href="./assets/three-effects-C-or6CQ5.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-YYxTBUex.css">
+  </head>
+  <body>
+    <main id="app">
+      <canvas id="scene" aria-label="鹈鹕骑行海岸公路的实时三维场景，可拖动旋转镜头"></canvas>
+      <div class="cinema-shade" aria-hidden="true"></div>
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="PELAGIC 首页"><span class="brand-mark">p.</span><span>PELAGIC<span class="brand-sub">A REALTIME SHORT</span></span></a>
+        <div class="scene-meta"><span class="live-dot"></span> LIVE RENDER <span class="separator">/</span> <span id="fps">—</span> FPS</div>
+        <button class="icon-button" id="settings-toggle" aria-label="打开画面设置" aria-expanded="false" aria-controls="settings"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6m8 4v6"/></svg></button>
+      </header>
+      <div class="chapter"><span class="short-line"></span> FIELD NOTES <span class="chapter-number">01 — PACIFIC COAST</span></div>
+      <aside class="settings" id="settings" hidden>
+        <div class="panel-heading">画面设置 <button id="settings-close" class="icon-button" aria-label="关闭设置">×</button></div>
+        <label class="setting-row" for="quality">画质 <select id="quality"><option value="balanced">平衡</option><option value="cinematic" selected>电影</option><option value="ultra">超精细</option></select></label>
+        <label class="setting-slider" for="exposure">曝光 <output id="exposure-value">1.00</output><input id="exposure" type="range" min="0.6" max="1.5" step="0.05" value="1" /></label>
+        <label class="setting-row" for="bloom">高光泛光 <input id="bloom" type="checkbox" checked role="switch" /></label>
+        <label class="setting-row" for="dof">镜头景深 <input id="dof" type="checkbox" checked role="switch" /></label>
+        <label class="setting-row" for="ao">环境遮蔽 <input id="ao" type="checkbox" checked role="switch" /></label>
+        <label class="setting-row" for="blur">运动模糊 <input id="blur" type="checkbox" checked role="switch" /></label>
+        <label class="setting-row" for="fog">海岸薄雾 <input id="fog" type="checkbox" checked role="switch" /></label>
+        <button id="reset" class="text-button">恢复默认设置 ↺</button>
+      </aside>
+      <section class="film-title" aria-label="短片标题"><div class="eyebrow">THE ART OF GOING NOWHERE</div><h1>逐风海岸<span>COASTING.</span></h1><p>海风正好。再往前一点。</p><div class="title-rule"></div><div class="film-credit">一只鹈鹕的黄金时刻 <span>35 mm / GOLDEN HOUR</span></div></section>
+      <div class="speed-readout"><div class="speed-label">GROUND SPEED</div><div><strong id="speed-number">38</strong><span>km/h</span></div><div class="speed-track"><span></span></div><div class="wind-label">NW <span>↗</span> 海风同行</div></div>
+      <footer class="controlbar">
+        <div class="transport"><button class="play-button" id="play" aria-label="暂停骑行"><svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button><div><span class="transport-title" id="play-label">自由驰行</span><span class="timecode" id="timecode">00:00</span></div></div>
+        <div class="camera-controls" role="group" aria-label="选择镜头"><button class="camera-button active" data-camera="tracking" aria-pressed="true"><span>01</span> 跟拍</button><button class="camera-button" data-camera="close" aria-pressed="false"><span>02</span> 特写</button><button class="camera-button" data-camera="wide" aria-pressed="false"><span>03</span> 远景</button><button class="camera-button" data-camera="orbit" aria-pressed="false"><span>04</span> 自由</button></div>
+        <label class="speed-control" for="speed"><span>骑行速度</span><input id="speed" type="range" min="12" max="64" value="38" step="1" aria-label="骑行速度，千米每小时"/><output id="speed-value">38</output></label>
+        <button id="fullscreen" class="icon-button" aria-label="进入全屏"><svg viewBox="0 0 24 24"><path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4"/></svg></button>
+      </footer>
+      <div class="interaction-hint" id="hint">拖动环绕 · 滚轮推近 <span>H 隐藏界面 · 空格 暂停</span></div>
+      <button id="show-ui" hidden aria-label="显示界面">显示界面 · H</button>
+      <div class="loading" id="loading"><span class="brand-mark">p.</span><p>海风即将抵达</p><div class="loading-track"><span id="loading-bar"></span></div><span id="loading-status">正在构建场景</span></div>
+      <div class="error" id="error" hidden role="alert"><h2>场景未能启动</h2><p id="error-message"></p><button onclick="location.reload()">重新载入</button></div>
+      <div class="toast" id="toast" role="status"></div>
+    </main>
+  </body>
+</html>
