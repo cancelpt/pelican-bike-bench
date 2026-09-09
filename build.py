@@ -246,7 +246,6 @@ TEMPLATE = r"""<!doctype html>
       <h1 class="h4 mb-1">鹈鹕骑自行车 · 模型对比</h1>
       <p class="text-secondary small mb-0">创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，你不需要任何测试</p>
     </div>
-    <a class="btn btn-outline-info" href="./3d/" target="_blank">3D 鹈鹕 · 逐风海岸</a>
   </div>
   <div class="d-flex flex-wrap gap-2 mb-3" id="f"></div>
   <div id="g"></div>
@@ -275,6 +274,20 @@ const card=x=>`<div class="card h-100${x.base?" base":""}">
     <a class="btn btn-sm btn-outline-info flex-shrink-0" href="${x.file}" target="_blank">独览</a>
   </div>
   <iframe class="shot" loading="lazy" src="${x.file}"></iframe>
+</div>`;
+const P3="创建新目录来实现：用 Three.js 制作一个电影级实时渲染风格的三维展示场景，内容是一只写实鹈鹕骑着自行车在海边公路上高速前进。重点突出高精度角色建模、复杂机械细节与高级实时光影效果：鹈鹕需拥有真实可信的长喙、喉囊、羽毛结构和身体比例，骑行动作自然且富有表演性；自行车需具备完整精细的机械结构，包括车架、轮组、链条传动、踏板、刹车和把手细节。材质采用高质量 PBR，羽毛、金属、橡胶、塑料和沥青路面都应体现明显而准确的材质差异。画面设置为室外 cinematic scene，使用 HDRI 天空环境、低角度太阳光、长阴影、轮廓光、地面反射和空气透视，辅以景深、Bloom、Motion Blur、SSAO、体积雾等后处理，构建具有强烈速度感、空间层次感与视觉冲击力的演示效果。";
+const astra3d=()=>`<div class="card mb-3">
+  <div class="card-body py-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+      <div>
+        <span class="fw-semibold">3D 鹈鹕 · 逐风海岸</span>
+        <span class="time font-monospace ms-2">47分15秒</span>
+        <span class="badge text-bg-secondary ms-1">$12</span>
+      </div>
+      <a class="btn btn-sm btn-outline-info flex-shrink-0" href="./3d/" target="_blank">打开 3D</a>
+    </div>
+    <div class="blurb text-secondary mt-2 mb-0">${esc(P3)}</div>
+  </div>
 </div>`;
 function vis(ms, md){ return open.has(md)||ms.length<=CAP?ms:ms.slice(0,CAP); }
 function render(){
@@ -305,6 +318,7 @@ function render(){
           ${rest?`<button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-x="${esc(md)}">展开其余 ${rest} 次</button>`:""}
           ${open.has(md)&&ms.length>CAP?`<button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-c="${esc(md)}">收起</button>`:""}
         </div>
+        ${md==="gpt-6-astra"?astra3d():""}
         <div class="grid">${vs.map(card).join("")}</div>
       </div>`;
     }).join("")}
