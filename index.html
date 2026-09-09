@@ -1,41 +1,99 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>鹈鹕骑自行车 · 中转站同屏对比</title>
+<title>鹈鹕骑自行车 · 模型对比</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-:root{color-scheme:dark}
-body{font:14px/1.5 system-ui,"Microsoft YaHei",sans-serif;background:#111;color:#eee;margin:16px}
-h1{font-size:18px;margin:0 0 4px}
-.sub{color:#888;margin:0 0 14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:14px}
-.card{background:#1b1b1b;border:1px solid #333;border-radius:8px;overflow:hidden}
-.hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;cursor:pointer}
-.hd:hover{background:#262626}
-.t{font-weight:600;letter-spacing:.5px}
-.time{font-variant-numeric:tabular-nums;color:#ffb454}
-.note{color:#888;font-size:12px}
-.card.base{border-color:#2ea04366}.card.base .t{color:#7ee787}
-.basewrap{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-.basewrap .card{width:min(430px,100%)}
-.feat{text-align:center;margin:0 0 14px}
-.feat a{display:inline-block;font-size:15px;font-weight:600;padding:8px 14px;border:1px solid #3d5a80;border-radius:8px;background:#15202b}
-iframe{width:100%;height:340px;border:0;border-top:1px solid #333;background:#fff}
-a{color:#6cb6ff;font-size:12px;text-decoration:none;white-space:nowrap}
-</style></head><body>
-<h1>鹈鹕骑自行车 · 中转站同屏对比</h1>
-<p class="sub">统一提示词：「创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，你不需要任何测试」· 模型 GPT-6-Astra Max（思考）· 按耗时升序 · 站点名已打码（OpenAI 为基线）· 点标题或「独览」新窗口打开</p>
-<p class="feat"><a href="./3d/" target="_blank">3D 鹈鹕 · 逐风海岸 ↗</a></p>
-<div class="basewrap" id="b"></div>
-<div class="grid" id="g"></div>
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:1rem}
+.shot{width:100%;height:340px;border:0;background:#fff}
+.time{color:#9a3412;font-variant-numeric:tabular-nums}
+.chip .badge{font-variant-numeric:tabular-nums}
+.blurb{white-space:pre-wrap;font-size:.85rem}
+.card.base{border-color:var(--bs-success)}
+.ico{width:18px;height:18px;border-radius:4px;background:#fff;border:1px solid #dee2e6}
+.ico-lg{width:36px;height:36px;border-radius:8px;background:#fff;border:1px solid #dee2e6}
+.region{border:1px solid #dee2e6;border-radius:1rem;padding:1rem 1.1rem;background:#f8f9fa}
+.model-block{border-top:1px solid #dee2e6;padding-top:1rem;margin-top:1rem}
+.model-block:first-of-type{border-top:0;padding-top:0;margin-top:0}
+</style></head><body class="bg-white text-dark">
+<div class="container-fluid py-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <h1 class="h4 mb-1">鹈鹕骑自行车 · 模型对比</h1>
+      <p class="text-secondary small mb-0">创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，你不需要任何测试</p>
+    </div>
+    <a class="btn btn-outline-info" href="./3d/" target="_blank">3D 鹈鹕 · 逐风海岸</a>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mb-3" id="f"></div>
+  <div id="g"></div>
+</div>
 <script>
-const D=[{"masked": "OpenAI", "secs": 613, "note": "", "base": true, "file": "./s01/pelican-ride.html"}, {"masked": "OpenAI（I*9提供）", "secs": 402, "note": "", "base": true, "file": "./s02/pelican-ride.html"}, {"masked": "x••••••价", "secs": 204, "note": "", "base": false, "file": "./s03/pelican-bike.html"}, {"masked": "c••••••s", "secs": 206, "note": "", "base": false, "file": "./s04/pelican-bicycle-animation.html"}, {"masked": "S••••••e", "secs": 287, "note": "", "base": false, "file": "./s05/pelican-bicycle.html"}, {"masked": "m••••••o", "secs": 341, "note": "", "base": false, "file": "./s06/pelican-bicycle-animation.html"}, {"masked": "a••••••s", "secs": 349, "note": "", "base": false, "file": "./s07/html-svg-2d-2/pelican-bike-animation.html"}, {"masked": "g••••••o", "secs": 375, "note": "正astra", "base": false, "file": "./s08/pelican-ride.html"}, {"masked": "c••••••o", "secs": 413, "note": "", "base": false, "file": "./s09/pelican_bike_animation.html"}, {"masked": "g••••••s", "secs": 441, "note": "疑似sol", "base": false, "file": "./s10/pelican-bike.html"}, {"masked": "A••••••y", "secs": 446, "note": "", "base": false, "file": "./s11/pelican-bicycle.html"}, {"masked": "A••••••r", "secs": 505, "note": "", "base": false, "file": "./s12/pelican-bike.html"}, {"masked": "a••••••o", "secs": 644, "note": "", "base": false, "file": "./s13/pelican-bike-animation.html"}];
-const card=x=>{
-  const t=x.secs==null?"?":`${Math.floor(x.secs/60)}分${x.secs%60}秒`;
-  return `<div class="card${x.base?" base":""}">
-    <div class="hd" onclick="window.open('${x.file}','_blank')">
-      <span><span class="t">${x.masked}</span> <span class="time">${t}</span>${x.note?` <span class="note">${x.note}</span>`:""}</span>
-      <a href="${x.file}" target="_blank">独览 ↗</a></div>
-    <iframe loading="lazy" src="${x.file}"></iframe></div>`};
-document.getElementById("b").innerHTML=D.filter(x=>x.base).map(card).join("");
-document.getElementById("g").innerHTML=D.filter(x=>!x.base).map(card).join("");
+const D=[{"family": "gpt", "model": "gpt-6-astra", "relay": "OpenAI（I*9提供）", "agent": "", "channel": "", "think": "", "extra": "", "secs": 402, "note": "0907", "blurb": "", "base": true, "file": "./s01/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "OpenAI", "agent": "", "channel": "", "think": "", "extra": "", "secs": 613, "note": "0907", "blurb": "", "base": true, "file": "./s02/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "OpenAI（I*9提供）", "agent": "", "channel": "", "think": "", "extra": "", "secs": 735, "note": "0908", "blurb": "", "base": true, "file": "./s03/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "x••••••价", "agent": "", "channel": "", "think": "", "extra": "", "secs": 204, "note": "0907", "blurb": "", "base": false, "file": "./s04/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "c••••••s", "agent": "", "channel": "", "think": "", "extra": "", "secs": 206, "note": "0907", "blurb": "", "base": false, "file": "./s05/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "x••••••价", "agent": "", "channel": "", "think": "", "extra": "", "secs": 208, "note": "0908", "blurb": "", "base": false, "file": "./s06/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "S••••••e", "agent": "", "channel": "", "think": "", "extra": "", "secs": 287, "note": "0907", "blurb": "", "base": false, "file": "./s07/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "2••••••4", "agent": "", "channel": "", "think": "", "extra": "", "secs": 307, "note": "0908", "blurb": "", "base": false, "file": "./s08/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "m••••••o", "agent": "", "channel": "", "think": "", "extra": "", "secs": 341, "note": "0907", "blurb": "", "base": false, "file": "./s09/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "a••••••s", "agent": "", "channel": "", "think": "", "extra": "", "secs": 349, "note": "0907", "blurb": "", "base": false, "file": "./s10/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "g••••••o", "agent": "", "channel": "", "think": "", "extra": "", "secs": 375, "note": "0907 正astra", "blurb": "", "base": false, "file": "./s11/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "g••••••s", "agent": "", "channel": "", "think": "", "extra": "", "secs": 380, "note": "0908", "blurb": "", "base": false, "file": "./s12/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "c••••••o", "agent": "", "channel": "", "think": "", "extra": "", "secs": 413, "note": "0907", "blurb": "", "base": false, "file": "./s13/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "g••••••s", "agent": "", "channel": "", "think": "", "extra": "", "secs": 441, "note": "0907 疑似sol", "blurb": "", "base": false, "file": "./s14/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "A••••••r", "agent": "", "channel": "", "think": "", "extra": "官key", "secs": 446, "note": "0907", "blurb": "", "base": false, "file": "./s15/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "A••••••r", "agent": "", "channel": "", "think": "", "extra": "", "secs": 505, "note": "0907", "blurb": "", "base": false, "file": "./s16/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "a••••••8", "agent": "", "channel": "", "think": "", "extra": "", "secs": 572, "note": "0908", "blurb": "", "base": false, "file": "./s17/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "a••••••o", "agent": "", "channel": "", "think": "", "extra": "", "secs": 644, "note": "0907", "blurb": "", "base": false, "file": "./s18/index.html"}, {"family": "gpt", "model": "gpt-6-astra", "relay": "2••••••2", "agent": "", "channel": "", "think": "", "extra": "", "secs": 674, "note": "0908", "blurb": "", "base": false, "file": "./s19/index.html"}, {"family": "gpt", "model": "gpt-5.6-luna", "relay": "OpenAI", "agent": "", "channel": "", "think": "", "extra": "", "secs": 206, "note": "", "blurb": "", "base": true, "file": "./s20/index.html"}, {"family": "gpt", "model": "gpt-5.6-sol", "relay": "OpenAI（I*9提供）", "agent": "", "channel": "", "think": "", "extra": "", "secs": 238, "note": "", "blurb": "", "base": true, "file": "./s21/index.html"}, {"family": "gpt", "model": "gpt-5.6-sol", "relay": "OpenAI", "agent": "", "channel": "", "think": "", "extra": "", "secs": 259, "note": "", "blurb": "", "base": true, "file": "./s22/index.html"}, {"family": "gpt", "model": "gpt-5.6-sol", "relay": "a••••••8", "agent": "", "channel": "", "think": "", "extra": "", "secs": 722, "note": "已验", "blurb": "", "base": false, "file": "./s23/index.html"}, {"family": "gpt", "model": "gpt-5.6-terra", "relay": "OpenAI", "agent": "", "channel": "", "think": "", "extra": "", "secs": 160, "note": "", "blurb": "", "base": true, "file": "./s24/index.html"}, {"family": "gpt", "model": "gpt-5.5", "relay": "OpenAI", "agent": "", "channel": "", "think": "", "extra": "", "secs": 139, "note": "", "blurb": "", "base": true, "file": "./s25/index.html"}, {"family": "claude", "model": "claude-fable-5.1", "relay": "G••••••L", "agent": "", "channel": "cursor", "think": "", "extra": "", "secs": 414, "note": "", "blurb": "", "base": false, "file": "./s26/index.html"}, {"family": "claude", "model": "claude-fable-5.1", "relay": "A••••••r", "agent": "", "channel": "", "think": "", "extra": "官订", "secs": 1073, "note": "", "blurb": "", "base": false, "file": "./s27/index.html"}, {"family": "claude", "model": "claude-fable-5.1", "relay": "G••••••L", "agent": "", "channel": "ccmax", "think": "", "extra": "", "secs": 1340, "note": "", "blurb": "", "base": false, "file": "./s28/index.html"}, {"family": "claude", "model": "claude-fable-5", "relay": "G••••••L", "agent": "", "channel": "cursor", "think": "", "extra": "", "secs": 149, "note": "", "blurb": "", "base": false, "file": "./s29/index.html"}, {"family": "claude", "model": "claude-fable-5", "relay": "A••••••r", "agent": "", "channel": "", "think": "", "extra": "官定", "secs": 246, "note": "", "blurb": "", "base": false, "file": "./s30/index.html"}, {"family": "claude", "model": "claude-fable-5", "relay": "G••••••L", "agent": "", "channel": "ccmax", "think": "", "extra": "", "secs": 806, "note": "", "blurb": "", "base": false, "file": "./s31/index.html"}, {"family": "claude", "model": "claude-opus-5", "relay": "G••••••L", "agent": "", "channel": "cursor", "think": "", "extra": "", "secs": 96, "note": "", "blurb": "", "base": false, "file": "./s32/index.html"}, {"family": "claude", "model": "claude-opus-5", "relay": "G••••••L", "agent": "", "channel": "ccmax", "think": "", "extra": "", "secs": 785, "note": "", "blurb": "", "base": false, "file": "./s33/index.html"}, {"family": "claude", "model": "claude-opus-4.6", "relay": "G••••••L", "agent": "", "channel": "cursor", "think": "", "extra": "", "secs": 92, "note": "", "blurb": "", "base": false, "file": "./s34/index.html"}, {"family": "claude", "model": "claude-opus-4.6", "relay": "G••••••L", "agent": "", "channel": "antigravity", "think": "", "extra": "", "secs": 1079, "note": "", "blurb": "", "base": false, "file": "./s35/index.html"}, {"family": "claude", "model": "claude-sonnet-5", "relay": "c••••••s", "agent": "", "channel": "ccmax", "think": "", "extra": "", "secs": 176, "note": "", "blurb": "", "base": false, "file": "./s36/index.html"}, {"family": "claude", "model": "claude-sonnet-5", "relay": "G••••••L", "agent": "", "channel": "ccmax", "think": "", "extra": "", "secs": 703, "note": "", "blurb": "让它在目录改，给我放我~/目录了", "base": false, "file": "./s37/index.html"}, {"family": "claude", "model": "claude-sonnet-5", "relay": "G••••••L", "agent": "", "channel": "ccmax", "think": "", "extra": "#2", "secs": 764, "note": "", "blurb": "", "base": false, "file": "./s38/index.html"}, {"family": "claude", "model": "claude-sonnet-4.6", "relay": "G••••••L", "agent": "", "channel": "cursor", "think": "", "extra": "", "secs": 165, "note": "", "blurb": "", "base": false, "file": "./s39/index.html"}, {"family": "claude", "model": "claude-sonnet-4.6", "relay": "G••••••L", "agent": "", "channel": "antigravity", "think": "", "extra": "", "secs": 238, "note": "", "blurb": "", "base": false, "file": "./s40/index.html"}, {"family": "gemini", "model": "gemini-3.8-flash", "relay": "A••••••r", "agent": "", "channel": "gemini-cli", "think": "", "extra": "", "secs": 131, "note": "", "blurb": "唯一有声音的", "base": false, "file": "./s41/index.html"}, {"family": "glm", "model": "glm-5.3", "relay": "", "agent": "TraeCode", "channel": "", "think": "极高", "extra": "", "secs": 7200, "note": "", "blurb": "两次出现 输出过长，请输入「继续」以获取更多内容。", "base": false, "file": "./s42/index.html"}, {"family": "glm", "model": "glm-5.3-flash", "relay": "", "agent": "TraeCode", "channel": "", "think": "极高", "extra": "", "secs": 247, "note": "", "blurb": "", "base": false, "file": "./s43/index.html"}, {"family": "glm", "model": "glm-5.2", "relay": "", "agent": "TraeCode", "channel": "", "think": "极高", "extra": "", "secs": 63, "note": "", "blurb": "", "base": false, "file": "./s44/index.html"}, {"family": "qwen", "model": "qwen-3.8-flash", "relay": "", "agent": "TraeCode", "channel": "", "think": "极高", "extra": "", "secs": 118, "note": "", "blurb": "", "base": false, "file": "./s45/index.html"}, {"family": "qwen", "model": "qwen-3.8-max", "relay": "", "agent": "TraeCode", "channel": "", "think": "极高", "extra": "", "secs": 354, "note": "", "blurb": "", "base": false, "file": "./s46/index.html"}, {"family": "qwen", "model": "qwen-3.7-plus", "relay": "", "agent": "TraeCode", "channel": "", "think": "默认", "extra": "", "secs": 89, "note": "", "blurb": "", "base": false, "file": "./s47/index.html"}, {"family": "deepseek", "model": "deepseek-v4flash", "relay": "", "agent": "TraeCode", "channel": "", "think": "极高", "extra": "", "secs": 174, "note": "", "blurb": "", "base": false, "file": "./s48/index.html"}, {"family": "deepseek", "model": "deepseek-v4pro", "relay": "", "agent": "TraeCode", "channel": "", "think": "极高", "extra": "", "secs": 539, "note": "", "blurb": "bug作品，需要把<body>标签的display: flex;去掉", "base": false, "file": "./s49/index.html"}, {"family": "kimi", "model": "kimi-k3", "relay": "", "agent": "TraeCode", "channel": "", "think": "极高", "extra": "", "secs": 1095, "note": "", "blurb": "", "base": false, "file": "./s50/index.html"}, {"family": "kimi", "model": "kimi-k2.7-code", "relay": "", "agent": "TraeCode", "channel": "", "think": "默认", "extra": "", "secs": 47, "note": "", "blurb": "", "base": false, "file": "./s51/index.html"}, {"family": "seed", "model": "seed-2.1-pro", "relay": "", "agent": "TraeCode", "channel": "", "think": "高", "extra": "", "secs": 587, "note": "", "blurb": "", "base": false, "file": "./s52/index.html"}, {"family": "seed", "model": "seed-2.1-turbo", "relay": "", "agent": "TraeCode", "channel": "", "think": "高", "extra": "", "secs": 103, "note": "", "blurb": "", "base": false, "file": "./s53/index.html"}, {"family": "seed", "model": "seed-code", "relay": "", "agent": "TraeCode", "channel": "", "think": "高", "extra": "", "secs": 70, "note": "", "blurb": "", "base": false, "file": "./s54/index.html"}, {"family": "grok", "model": "grok-4.6", "relay": "a••••••8", "agent": "", "channel": "", "think": "grok-heavy xhigh", "extra": "", "secs": 391, "note": "", "blurb": "", "base": false, "file": "./s55/index.html"}, {"family": "grok", "model": "grok-4.6", "relay": "a••••••8", "agent": "", "channel": "", "think": "grok-heavy cheat", "extra": "", "secs": 598, "note": "", "blurb": "模型通过记忆插件MCP发现在测bench，所以读取了其他模型的绘画结果", "base": false, "file": "./s56/index.html"}, {"family": "hy", "model": "hy4-preview", "relay": "", "agent": "Codebuddy", "channel": "", "think": "high", "extra": "", "secs": 258, "note": "", "blurb": "", "base": false, "file": "./s57/index.html"}, {"family": "hy", "model": "hy3", "relay": "", "agent": "Codebuddy", "channel": "", "think": "high", "extra": "", "secs": 51, "note": "", "blurb": "", "base": false, "file": "./s58/index.html"}, {"family": "longcat", "model": "longcat-2.0", "relay": "", "agent": "Pi", "channel": "", "think": "", "extra": "官key", "secs": 102, "note": "", "blurb": "", "base": false, "file": "./s59/index.html"}, {"family": "longcat", "model": "longcat-2.0", "relay": "", "agent": "Codebuddy", "channel": "", "think": "", "extra": "官key", "secs": 116, "note": "", "blurb": "", "base": false, "file": "./s60/index.html"}, {"family": "minimax", "model": "minimax-m3", "relay": "", "agent": "TraeCode", "channel": "", "think": "默认", "extra": "", "secs": 37, "note": "", "blurb": "", "base": false, "file": "./s61/index.html"}], CAP=3;
+const SITE={gpt:"https://openai.com",claude:"https://www.anthropic.com",gemini:"https://gemini.google.com",glm:"https://z.ai/",qwen:"https://qwen.ai",deepseek:"https://www.deepseek.com",kimi:"https://www.moonshot.cn",seed:"https://www.volcengine.com",grok:"https://x.ai/",hy:"https://hunyuan.tencent.com",longcat:"https://longcat.chat",minimax:"https://minimaxi.com/"};
+const LAB={gpt:"OpenAI",claude:"Anthropic",gemini:"Google",glm:"Z.ai",qwen:"Qwen",deepseek:"DeepSeek",kimi:"Moonshot",seed:"ByteDance",grok:"xAI",hy:"Tencent",longcat:"LongCat",minimax:"MiniMax"};
+const ico=u=>`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(u)}&size=256`;
+let fam=D[0].family, model="", open=new Set();
+const fams=[...new Set(D.map(x=>x.family))];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const fmt=s=>s==null?"?":`${Math.floor(s/60)}分${s%60}秒`;
+const title=x=>x.relay||x.agent||x.channel||"?";
+const img=(f,cls)=>SITE[f]?`<img class="${cls}" src="${ico(SITE[f])}" alt="" width="${cls==="ico-lg"?36:18}" height="${cls==="ico-lg"?36:18}">`:"";
+const chip=(label,n,on,attr,f)=>`<button type="button" class="btn btn-sm chip ${on?"btn-primary":"btn-outline-secondary"} d-inline-flex align-items-center gap-2" ${attr}>${f?img(f,"ico"):""}<span class="name">${esc(label)}</span><span class="badge rounded-pill text-bg-dark">${n}次</span></button>`;
+const tags=x=>[x.agent&&x.relay?["primary",x.agent]:null,x.channel?["success",x.channel]:null,x.think?["warning",x.think]:null,x.extra?["secondary",x.extra]:null].filter(Boolean)
+  .map(([c,t])=>`<span class="badge text-bg-${c}">${esc(t)}</span>`).join(" ");
+const card=x=>`<div class="card h-100${x.base?" base":""}">
+  <div class="card-header py-2 d-flex justify-content-between align-items-start gap-2" onclick="window.open('${x.file}','_blank')" style="cursor:pointer">
+    <div>
+      <div><span class="fw-semibold">${esc(title(x))}</span> <span class="time font-monospace">${fmt(x.secs)}</span>${x.note?` <span class="text-secondary small">${esc(x.note)}</span>`:""}</div>
+      <div class="d-flex flex-wrap gap-1 mt-1">${tags(x)}</div>
+      ${x.blurb?`<div class="alert alert-warning py-1 px-2 mt-2 mb-0 blurb">${esc(x.blurb)}</div>`:""}
+    </div>
+    <a class="btn btn-sm btn-outline-info flex-shrink-0" href="${x.file}" target="_blank">独览</a>
+  </div>
+  <iframe class="shot" loading="lazy" src="${x.file}"></iframe>
+</div>`;
+function vis(ms, md){ return open.has(md)||ms.length<=CAP?ms:ms.slice(0,CAP); }
+function render(){
+  const inFam=D.filter(x=>x.family===fam);
+  const mods=[...new Set(inFam.map(x=>x.model))];
+  if(model && !mods.includes(model)) model="";
+  const shown=model?mods.filter(m=>m===model):mods;
+  document.getElementById("f").innerHTML=fams.map(f=>{
+    const n=D.filter(x=>x.family===f).length;
+    return chip(LAB[f]||f,n,f===fam,`data-f="${esc(f)}"`,f);
+  }).join("");
+  document.getElementById("g").innerHTML=`<section class="region">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">${img(fam,"ico-lg")}<h2 class="h5 mb-0">${esc(LAB[fam]||fam)}</h2><span class="badge rounded-pill text-bg-secondary">${inFam.length}次</span></div>
+      <div class="d-flex flex-wrap gap-2" id="m">${chip("全部",inFam.length,!model,'data-m=""')}${mods.map(md=>{
+        const n=inFam.filter(x=>x.model===md).length;
+        return chip(md,n,model===md,`data-m="${esc(md)}"`);
+      }).join("")}</div>
+    </div>
+    ${shown.map(md=>{
+      const ms=inFam.filter(x=>x.model===md);
+      const vs=vis(ms,md);
+      const rest=ms.length-vs.length;
+      return `<div class="model-block">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <h3 class="h6 mb-0">${esc(md)}</h3>
+          <span class="badge rounded-pill text-bg-secondary">${ms.length}次</span>
+          ${rest?`<button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-x="${esc(md)}">展开其余 ${rest} 次</button>`:""}
+          ${open.has(md)&&ms.length>CAP?`<button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-c="${esc(md)}">收起</button>`:""}
+        </div>
+        <div class="grid">${vs.map(card).join("")}</div>
+      </div>`;
+    }).join("")}
+  </section>`;
+}
+document.getElementById("f").onclick=e=>{const b=e.target.closest("button[data-f]");if(!b)return;fam=b.dataset.f;model="";open.clear();render();};
+document.body.addEventListener("click",e=>{
+  const m=e.target.closest("button[data-m]");
+  if(m){model=m.dataset.m;open.clear();render();return;}
+  const x=e.target.closest("button[data-x]");
+  if(x){open.add(x.dataset.x);render();return;}
+  const c=e.target.closest("button[data-c]");
+  if(c){open.delete(c.dataset.c);render();}
+});
+render();
 </script></body></html>
