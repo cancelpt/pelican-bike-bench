@@ -14,10 +14,10 @@ HOUR = re.compile(r"约?\s*(\d+)\s*小时")
 SEC = re.compile(r"(\d+(?:\.\d+)?)\s*s\b", re.I)
 OPENAI_ALIAS = {"OpenAI-2": "OpenAI（I*9提供）", "OpenAI-IE9": "OpenAI（I*9提供）"}
 RELAY_ALIAS = {"刀": "c"}
-FAM_ORDER = ["gpt", "claude", "gemini", "glm", "qwen", "deepseek", "kimi", "seed", "grok", "hy", "longcat", "minimax"]
+FAM_PIN = ["gpt", "claude", "gemini", "grok", "glm", "kimi", "deepseek"]
 AGENTS = {"traecode": "TraeCode", "codebuddy": "Codebuddy", "pi": "Pi"}
 CHANNELS = {"cursor": "cursor", "antigravity": "antigravity", "ccmax": "ccmax", "gemini-cli": "gemini-cli"}
-THINKING = {"极高": "极高", "默认": "默认", "高": "高", "high": "high", "xhigh": "xhigh", "cheat": "cheat", "grok-heavy": "grok-heavy"}
+THINKING = {"极高": "极高", "默认": "默认", "高": "高", "high": "high", "xhigh": "xhigh"}
 EXTRA = {"官key": "官key", "官定": "官定", "官订": "官订"}
 TIER = {"平价", "plus", "pro"}
 COMPOUND = ("gemini-cli", "grok-heavy")
@@ -25,6 +25,55 @@ DISPLAY = {
     "deepseek-v4flash": "deepseek-v4-flash",
     "deepseek-v4.1flash": "deepseek-v4.1-flash",
     "deepseek-v4pro": "deepseek-v4-pro",
+}
+RELEASE = {  # 北京时间：OpenRouter created 转 UTC+8 日历日；seed-2.1-pro 用官网 2026-06-23
+    "claude-fable-5": "2026-06-09",
+    "claude-fable-5.1": "2026-09-02",
+    "claude-opus-4.6": "2026-02-04",
+    "claude-opus-5": "2026-07-25",
+    "claude-sonnet-4.6": "2026-02-17",
+    "claude-sonnet-5": "2026-07-01",
+    "deepseek-v4.1flash": "2026-09-10",
+    "deepseek-v4flash": "2026-07-31",
+    "deepseek-v4pro": "2026-08-12",
+    "gemini-3.8-flash": "2026-09-02",
+    "glm-5.2": "2026-06-17",
+    "glm-5.3": "2026-08-19",
+    "glm-5.3-flash": "2026-08-26",
+    "gpt-5.5": "2026-04-25",
+    "gpt-5.6-luna": "2026-07-09",
+    "gpt-5.6-sol": "2026-07-09",
+    "gpt-5.6-terra": "2026-07-09",
+    "gpt-6-astra": "2026-09-05",
+    "grok-4.6": "2026-08-12",
+    "hy3": "2026-07-06",
+    "hy4-preview": "2026-08-28",
+    "kimi-k2.7-code": "2026-06-12",
+    "kimi-k3": "2026-07-16",
+    "longcat-2.0": "2026-07-20",
+    "minimax-m3": "2026-06-01",
+    "qwen-3.7-plus": "2026-06-03",
+    "qwen-3.8-flash": "2026-08-27",
+    "qwen-3.8-max": "2026-09-04",
+    "seed-2.1-pro": "2026-06-23",
+    "seed-2.1-turbo": "2026-08-13",
+    "seed-code": "2026-08-13",
+}
+G56_ORDER = {"gpt-5.6-sol": 0, "gpt-5.6-terra": 1, "gpt-5.6-luna": 2}
+THINK_DEFAULT = {
+    "gpt-6-astra": "max",
+    "gpt-5.6-luna": "max",
+    "gpt-5.6-sol": "max",
+    "gpt-5.6-terra": "max",
+    "gpt-5.5": "xhigh",
+    "claude-fable-5": "max",
+    "claude-fable-5.1": "max",
+    "claude-opus-4.6": "max",
+    "claude-opus-5": "max",
+    "claude-sonnet-4.6": "max",
+    "claude-sonnet-5": "max",
+    "gemini-3.8-flash": "medium",
+    "longcat-2.0": "开启",
 }
 
 
@@ -59,7 +108,7 @@ def run_meta(rel: Path):
 
 def family_of(model: str) -> str:
     m = model.lower()
-    for p in FAM_ORDER:
+    for p in FAM_PIN + ["qwen", "seed", "hy", "longcat", "minimax"]:
         if m.startswith(p):
             return p
     return re.split(r"[-_]", m)[0]
@@ -108,6 +157,10 @@ def classify(channel: str):
             extras.append(EXTRA.get(tok, EXTRA[k]))
         elif tok.isdigit() and len(tok) <= 2:
             extras.append(f"#{tok}")
+        elif tok.lower() == "cheat":
+            extras.append("cheat")
+        elif k == "grok-heavy":
+            continue
         elif tok in TIER or k in TIER:
             raw_relay.append(tok)
         else:
@@ -167,6 +220,15 @@ def build():
             rel = src.relative_to(model)
             channel, secs, note = run_meta(rel)
             lab = classify(channel)
+            if not lab.get("think"):
+                lab["think"] = THINK_DEFAULT.get(model.name, "")
+            if model.name == "grok-4.6":
+                lab["think"] = "xhigh"
+                extra = str(lab.get("extra") or "")
+                if "cheat" in extra.split():
+                    lab["extra"] = " ".join(e for e in extra.split() if e != "cheat")
+                    if "cheat" not in note:
+                        note = (note + " cheat").strip()
             blurb = read_note(src)
             if model.name == "gemini-3.8-flash" and not blurb:
                 blurb = "唯一有声音的"
@@ -174,6 +236,7 @@ def build():
                 dict(
                     model=DISPLAY.get(model.name, model.name),
                     family=family_of(model.name),
+                    released=RELEASE.get(model.name, ""),
                     dir=str(src.relative_to(ROOT)),
                     site=channel,
                     secs=secs,
@@ -187,9 +250,27 @@ def build():
                 dict(raw=channel, s=secs, note=note, **{k: lab[k] for k in ("relay", "agent", "channel", "think", "extra")})
             )
 
+    newest = {}
+    for it in items:
+        r = int((it.get("released") or "0").replace("-", "") or 0)
+        if r > newest.get(it["family"], 0):
+            newest[it["family"]] = r
+
+    def fam_rank(fam):
+        if fam in FAM_PIN:
+            return (0, FAM_PIN.index(fam))
+        return (1, -newest.get(fam, 0))
+
     def sort_key(x):
-        fo = FAM_ORDER.index(x["family"]) if x["family"] in FAM_ORDER else 99
-        return (fo, 0 if x["model"] == "gpt-6-astra" else 1, model_sort_key(x["model"]), 0 if x["base"] else 1, x["secs"] is None, x["secs"] or 0)
+        return (
+            fam_rank(x["family"]),
+            -(int((x.get("released") or "0").replace("-", "") or 0)),
+            G56_ORDER.get(x["model"], 9),
+            x["model"],
+            0 if x["base"] else 1,
+            x["secs"] is None,
+            x["secs"] or 0,
+        )
 
     from collections import Counter
     items.sort(key=sort_key)
@@ -204,7 +285,7 @@ def build():
     if THREE.exists():
         shutil.copytree(THREE, DIST / "3d")
     public = [
-        {k: it[k] for k in ("family", "model", "relay", "agent", "channel", "think", "extra", "secs", "note", "blurb", "base", "file")}
+        {k: it[k] for k in ("family", "model", "released", "relay", "agent", "channel", "think", "extra", "secs", "note", "blurb", "base", "file")}
         for it in items
     ]
     (DIST / "index.html").write_text(TEMPLATE.replace("__DATA__", json.dumps(public, ensure_ascii=False)), encoding="utf-8")
@@ -217,13 +298,20 @@ def build():
     assert n_models == 31 and len(items) == 62 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 19 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
-    assert any(it["model"] == "deepseek-v4-pro" and "display: flex" in (it["blurb"] or "") for it in items)
+    assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
+    assert any(it["model"] == "deepseek-v4-pro" and it["released"] == "2026-08-12" for it in items)
+    fams = list(dict.fromkeys(it["family"] for it in items))
+    assert fams[:7] == FAM_PIN, fams
+    assert fams[7:] == ["qwen", "hy", "seed", "longcat", "minimax"], fams
     assert any(it["model"] == "deepseek-v4.1-flash" and it["agent"] == "Codebuddy" and it["think"] == "xhigh" and it["secs"] == 99 for it in items)
     assert any(it["model"] == "gemini-3.8-flash" and it["blurb"] == "唯一有声音的" for it in items)
     claude_models = list(dict.fromkeys(it["model"] for it in items if it["family"] == "claude"))
     assert claude_models.index("claude-fable-5.1") < claude_models.index("claude-fable-5")
     assert not any("Total cost:" in (it["blurb"] or "") or (it["blurb"] or "") == "仍然调用了无头浏览器做视觉检查" for it in items)
-    assert any(it["agent"] == "TraeCode" and it["think"] == "极高" and not it["relay"] for it in items)
+    assert all(it.get("think") for it in items)
+    assert any(it["model"] == "gemini-3.8-flash" and it["think"] == "medium" for it in items)
+    assert any(it["model"] == "gpt-6-astra" and it["think"] == "max" for it in items)
+    assert any(it["model"] == "longcat-2.0" and it["think"] == "开启" for it in items)
     assert any(it["channel"] == "cursor" and it["relay"] for it in items)
     return len(items), n_models, n_fam
 
@@ -236,6 +324,7 @@ TEMPLATE = r"""<!doctype html>
 <style>
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:1rem}
 .shot{width:100%;height:340px;border:0;background:#fff}
+.badge-think{background:#7c2d12;color:#fff}
 .time{color:#9a3412;font-variant-numeric:tabular-nums}
 .chip .badge{font-variant-numeric:tabular-nums}
 .blurb{white-space:pre-wrap;font-size:.85rem}
@@ -250,7 +339,8 @@ TEMPLATE = r"""<!doctype html>
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <div>
       <h1 class="h4 mb-1">鹈鹕骑自行车 · 模型对比</h1>
-      <p class="text-secondary small mb-0">创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，你不需要任何测试</p>
+      <p class="small mb-1 d-flex flex-wrap align-items-center gap-2"><span id="p2t">创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，你不需要任何测试</span><button type="button" class="btn btn-sm btn-outline-secondary" data-copy="p2">复制</button></p>
+      <p class="text-secondary small mb-0">发布日为北京时间：OpenRouter <code>created</code> 时间戳转 UTC+8 日历日（与 OR 页面 UTC 日可能差一天）。seed-2.1-pro 用官网 Seed2.1 发布日 2026-06-23。</p>
     </div>
   </div>
   <div class="d-flex flex-wrap gap-2 mb-3" id="f"></div>
@@ -267,9 +357,9 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const fmt=s=>s==null?"?":`${Math.floor(s/60)}分${s%60}秒`;
 const title=x=>x.relay||x.agent||x.channel||"?";
 const img=(f,cls)=>SITE[f]?`<img class="${cls}" src="${ico(SITE[f])}" alt="" width="${cls==="ico-lg"?36:18}" height="${cls==="ico-lg"?36:18}">`:"";
-const chip=(label,n,on,attr,f)=>`<button type="button" class="btn btn-sm chip ${on?"btn-primary":"btn-outline-secondary"} d-inline-flex align-items-center gap-2" ${attr}>${f?img(f,"ico"):""}<span class="name">${esc(label)}</span><span class="badge rounded-pill text-bg-dark">${n}次</span></button>`;
-const tags=x=>[x.agent&&x.relay?["primary",x.agent]:null,x.channel?["success",x.channel]:null,x.think?["warning",x.think]:null,x.extra?["secondary",x.extra]:null].filter(Boolean)
-  .map(([c,t])=>`<span class="badge text-bg-${c}">${esc(t)}</span>`).join(" ");
+const chip=(label,n,on,attr,f,date)=>`<button type="button" class="btn btn-sm chip ${on?"btn-primary":"btn-outline-secondary"} d-inline-flex align-items-center gap-2" ${attr}>${f?img(f,"ico"):""}<span class="name">${esc(label)}</span>${date?`<span class="text-secondary">${esc(date)}</span>`:""}<span class="badge rounded-pill text-bg-dark">${n}次</span></button>`;
+const tags=x=>[x.agent&&x.relay?["primary",x.agent]:null,x.channel?["success",x.channel]:null,x.think?["think","思考 · "+x.think]:null,x.extra?["secondary",x.extra]:null].filter(Boolean)
+  .map(([c,t])=>c==="think"?`<span class="badge badge-think">${esc(t)}</span>`:`<span class="badge text-bg-${c}">${esc(t)}</span>`).join(" ");
 const card=x=>`<div class="card h-100${x.base?" base":""}">
   <div class="card-header py-2 d-flex justify-content-between align-items-start gap-2" onclick="window.open('${x.file}','_blank')" style="cursor:pointer">
     <div>
@@ -281,7 +371,13 @@ const card=x=>`<div class="card h-100${x.base?" base":""}">
   </div>
   <iframe class="shot" loading="lazy" src="${x.file}"></iframe>
 </div>`;
+const P2="创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，你不需要任何测试";
 const P3="创建新目录来实现：用 Three.js 制作一个电影级实时渲染风格的三维展示场景，内容是一只写实鹈鹕骑着自行车在海边公路上高速前进。重点突出高精度角色建模、复杂机械细节与高级实时光影效果：鹈鹕需拥有真实可信的长喙、喉囊、羽毛结构和身体比例，骑行动作自然且富有表演性；自行车需具备完整精细的机械结构，包括车架、轮组、链条传动、踏板、刹车和把手细节。材质采用高质量 PBR，羽毛、金属、橡胶、塑料和沥青路面都应体现明显而准确的材质差异。画面设置为室外 cinematic scene，使用 HDRI 天空环境、低角度太阳光、长阴影、轮廓光、地面反射和空气透视，辅以景深、Bloom、Motion Blur、SSAO、体积雾等后处理，构建具有强烈速度感、空间层次感与视觉冲击力的演示效果。";
+const copyTxt=async (k,btn)=>{
+  const t=k==="p3"?P3:P2;
+  try{await navigator.clipboard.writeText(t);}catch(e){const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();}
+  if(btn){const o=btn.textContent;btn.textContent="已复制";setTimeout(()=>btn.textContent=o,1200);}
+};
 const astra3d=()=>`<div class="card mb-3">
   <div class="card-body py-3">
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
@@ -289,6 +385,7 @@ const astra3d=()=>`<div class="card mb-3">
         <span class="fw-semibold">3D 鹈鹕 · 逐风海岸</span>
         <span class="time font-monospace ms-2">47分15秒</span>
         <span class="badge text-bg-secondary ms-1">$12</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-copy="p3">复制提示词</button>
       </div>
       <a class="btn btn-sm btn-outline-info flex-shrink-0" href="./3d/" target="_blank">打开 3D</a>
     </div>
@@ -310,7 +407,7 @@ function render(){
       <div class="d-flex align-items-center gap-2">${img(fam,"ico-lg")}<h2 class="h5 mb-0">${esc(LAB[fam]||fam)}</h2><span class="badge rounded-pill text-bg-secondary">${inFam.length}次</span></div>
       <div class="d-flex flex-wrap gap-2" id="m">${chip("全部",inFam.length,!model,'data-m=""')}${mods.map(md=>{
         const n=inFam.filter(x=>x.model===md).length;
-        return chip(md,n,model===md,`data-m="${esc(md)}"`);
+        return chip(md,n,model===md,`data-m="${esc(md)}"`,null,(inFam.find(x=>x.model===md)||{}).released);
       }).join("")}</div>
     </div>
     ${shown.map(md=>{
@@ -320,6 +417,7 @@ function render(){
       return `<div class="model-block">
         <div class="d-flex align-items-center gap-2 mb-2">
           <h3 class="h6 mb-0">${esc(md)}</h3>
+          ${ms[0]&&ms[0].released?`<span class="text-secondary">${esc(ms[0].released)}</span>`:""}
           <span class="badge rounded-pill text-bg-secondary">${ms.length}次</span>
           ${rest?`<button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-x="${esc(md)}">展开其余 ${rest} 次</button>`:""}
           ${open.has(md)&&ms.length>CAP?`<button type="button" class="btn btn-sm btn-outline-secondary ms-auto" data-c="${esc(md)}">收起</button>`:""}
@@ -332,6 +430,8 @@ function render(){
 }
 document.getElementById("f").onclick=e=>{const b=e.target.closest("button[data-f]");if(!b)return;fam=b.dataset.f;model="";open.clear();render();};
 document.body.addEventListener("click",e=>{
+  const cp=e.target.closest("[data-copy]");
+  if(cp){e.preventDefault();e.stopPropagation();copyTxt(cp.dataset.copy,cp);return;}
   const m=e.target.closest("button[data-m]");
   if(m){model=m.dataset.m;open.clear();render();return;}
   const x=e.target.closest("button[data-x]");
