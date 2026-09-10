@@ -21,6 +21,11 @@ THINKING = {"极高": "极高", "默认": "默认", "高": "高", "high": "high"
 EXTRA = {"官key": "官key", "官定": "官定", "官订": "官订"}
 TIER = {"平价", "plus", "pro"}
 COMPOUND = ("gemini-cli", "grok-heavy")
+DISPLAY = {
+    "deepseek-v4flash": "deepseek-v4-flash",
+    "deepseek-v4.1flash": "deepseek-v4.1-flash",
+    "deepseek-v4pro": "deepseek-v4-pro",
+}
 
 
 def parse_run(name):
@@ -167,7 +172,7 @@ def build():
                 blurb = "唯一有声音的"
             items.append(
                 dict(
-                    model=model.name,
+                    model=DISPLAY.get(model.name, model.name),
                     family=family_of(model.name),
                     dir=str(src.relative_to(ROOT)),
                     site=channel,
@@ -209,10 +214,11 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 30 and len(items) == 61 and not leftover, (n_models, len(items), leftover[:5])
+    assert n_models == 31 and len(items) == 62 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 19 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
-    assert any(it["model"] == "deepseek-v4pro" and "display: flex" in (it["blurb"] or "") for it in items)
+    assert any(it["model"] == "deepseek-v4-pro" and "display: flex" in (it["blurb"] or "") for it in items)
+    assert any(it["model"] == "deepseek-v4.1-flash" and it["agent"] == "Codebuddy" and it["think"] == "xhigh" and it["secs"] == 99 for it in items)
     assert any(it["model"] == "gemini-3.8-flash" and it["blurb"] == "唯一有声音的" for it in items)
     claude_models = list(dict.fromkeys(it["model"] for it in items if it["family"] == "claude"))
     assert claude_models.index("claude-fable-5.1") < claude_models.index("claude-fable-5")
