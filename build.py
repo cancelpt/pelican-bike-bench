@@ -11,13 +11,14 @@ DATE_RE = re.compile(r"^\d{4}$")
 MS = re.compile(r"(\d+)\s*分\s*(\d+)\s*秒")
 MEN = re.compile(r"(\d+)\s*m\s*(\d+)\s*s", re.I)
 HOUR = re.compile(r"约?\s*(\d+)\s*小时")
+MINU = re.compile(r"(\d+)\s*min\b", re.I)
 SEC = re.compile(r"(\d+(?:\.\d+)?)\s*s\b", re.I)
 OPENAI_ALIAS = {"OpenAI-2": "OpenAI（I*9提供）", "OpenAI-IE9": "OpenAI（I*9提供）"}
 RELAY_ALIAS = {"刀": "c"}
 FAM_PIN = ["gpt", "claude", "gemini", "grok", "glm", "kimi", "deepseek"]
-AGENTS = {"traecode": "TraeCode", "codebuddy": "Codebuddy", "pi": "Pi"}
+AGENTS = {"traecode": "TraeCode", "codebuddy": "Codebuddy", "pi": "Pi", "codex": "Codex"}
 CHANNELS = {"cursor": "cursor", "antigravity": "antigravity", "ccmax": "ccmax", "gemini-cli": "gemini-cli"}
-THINKING = {"极高": "极高", "默认": "默认", "高": "高", "high": "high", "xhigh": "xhigh"}
+THINKING = {"极高": "极高", "默认": "默认", "高": "高", "high": "high", "xhigh": "xhigh", "max": "max"}
 EXTRA = {"官key": "官key", "官定": "官定", "官订": "官订"}
 TIER = {"平价", "plus", "pro"}
 COMPOUND = ("gemini-cli", "grok-heavy")
@@ -58,6 +59,8 @@ RELEASE = {  # 北京时间：OpenRouter created 转 UTC+8 日历日；seed-2.1-
     "seed-2.1-pro": "2026-06-23",
     "seed-2.1-turbo": "2026-08-13",
     "seed-code": "2026-08-13",
+    "mimo-v2.5": "2026-04-23",
+    "mimo-v2.5-pro": "2026-04-23",
 }
 G56_ORDER = {"gpt-5.6-sol": 0, "gpt-5.6-terra": 1, "gpt-5.6-luna": 2}
 THINK_DEFAULT = {
@@ -83,6 +86,7 @@ def parse_run(name):
         (MS, lambda m: int(m.group(1)) * 60 + int(m.group(2))),
         (MEN, lambda m: int(m.group(1)) * 60 + int(m.group(2))),
         (HOUR, lambda m: int(m.group(1)) * 3600),
+        (MINU, lambda m: int(m.group(1)) * 60),
         (SEC, lambda m: int(round(float(m.group(1))))),
     ):
         m = rx.search(name)
@@ -108,7 +112,7 @@ def run_meta(rel: Path):
 
 def family_of(model: str) -> str:
     m = model.lower()
-    for p in FAM_PIN + ["qwen", "seed", "hy", "longcat", "minimax"]:
+    for p in FAM_PIN + ["qwen", "seed", "hy", "longcat", "minimax", "mimo"]:
         if m.startswith(p):
             return p
     return re.split(r"[-_]", m)[0]
@@ -150,9 +154,20 @@ def classify(channel: str):
             agent = AGENTS[k]
         elif k in CHANNELS:
             ch = CHANNELS[k]
+        elif tok.endswith("思考") and (tok[:-2] in THINKING or tok[:-2].lower() in THINKING):
+            v = THINKING.get(tok[:-2], THINKING[tok[:-2].lower()])
+            think = f"{think} {v}".strip() if think else v
         elif tok in THINKING or k in THINKING:
             v = THINKING.get(tok, THINKING[k])
             think = f"{think} {v}".strip() if think else v
+        elif re.fullmatch(r"由.+提供", tok):
+            nick = tok[1:-2]
+            if nick.startswith("🎸"):
+                core, pre = nick[1:], "🎸"
+            else:
+                core, pre = nick, ""
+            masked = pre + (core[0] + "•" * 6 + core[-1] if len(core) > 2 else core)
+            extras.append("由" + masked + "提供")
         elif tok in EXTRA or k in EXTRA:
             extras.append(EXTRA.get(tok, EXTRA[k]))
         elif tok.isdigit() and len(tok) <= 2:
@@ -295,14 +310,15 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 31 and len(items) == 62 and not leftover, (n_models, len(items), leftover[:5])
+    assert n_models == 33 and len(items) == 64 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 19 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
     assert any(it["model"] == "deepseek-v4-pro" and it["released"] == "2026-08-12" for it in items)
     fams = list(dict.fromkeys(it["family"] for it in items))
     assert fams[:7] == FAM_PIN, fams
-    assert fams[7:] == ["qwen", "hy", "seed", "longcat", "minimax"], fams
+    assert fams[7:] == ["qwen", "hy", "seed", "longcat", "minimax", "mimo"], fams
+    assert any(it["family"] == "mimo" and "E••••••e" in (it.get("extra") or "") and it["think"] == "max" for it in items)
     assert any(it["model"] == "deepseek-v4.1-flash" and it["agent"] == "Codebuddy" and it["think"] == "xhigh" and it["secs"] == 99 for it in items)
     assert any(it["model"] == "gemini-3.8-flash" and it["blurb"] == "唯一有声音的" for it in items)
     claude_models = list(dict.fromkeys(it["model"] for it in items if it["family"] == "claude"))
@@ -348,8 +364,8 @@ TEMPLATE = r"""<!doctype html>
 </div>
 <script>
 const D=__DATA__, CAP=3;
-const SITE={gpt:"https://openai.com",claude:"https://www.anthropic.com",gemini:"https://gemini.google.com",glm:"https://z.ai/",qwen:"https://qwen.ai",deepseek:"https://www.deepseek.com",kimi:"https://www.moonshot.cn",seed:"https://www.volcengine.com",grok:"https://x.ai/",hy:"https://hunyuan.tencent.com",longcat:"https://longcat.chat",minimax:"https://minimaxi.com/"};
-const LAB={gpt:"OpenAI",claude:"Anthropic",gemini:"Google",glm:"Z.ai",qwen:"Qwen",deepseek:"DeepSeek",kimi:"Moonshot",seed:"ByteDance",grok:"xAI",hy:"Tencent",longcat:"LongCat",minimax:"MiniMax"};
+const SITE={gpt:"https://openai.com",claude:"https://www.anthropic.com",gemini:"https://gemini.google.com",glm:"https://z.ai/",qwen:"https://qwen.ai",deepseek:"https://www.deepseek.com",kimi:"https://www.moonshot.cn",seed:"https://www.volcengine.com",grok:"https://x.ai/",hy:"https://hunyuan.tencent.com",longcat:"https://longcat.chat",minimax:"https://minimaxi.com/",mimo:"https://www.xiaomi.com"};
+const LAB={gpt:"OpenAI",claude:"Anthropic",gemini:"Google",glm:"Z.ai",qwen:"Qwen",deepseek:"DeepSeek",kimi:"Moonshot",seed:"ByteDance",grok:"xAI",hy:"Tencent",longcat:"LongCat",minimax:"MiniMax",mimo:"Xiaomi"};
 const ico=u=>`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(u)}&size=256`;
 let fam=D[0].family, model="", open=new Set();
 const fams=[...new Set(D.map(x=>x.family))];
