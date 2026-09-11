@@ -13,7 +13,7 @@ MEN = re.compile(r"(\d+)\s*m\s*(\d+)\s*s", re.I)
 HOUR = re.compile(r"约?\s*(\d+)\s*小时")
 MINU = re.compile(r"(\d+)\s*min\b", re.I)
 SEC = re.compile(r"(\d+(?:\.\d+)?)\s*s\b", re.I)
-OPENAI_ALIAS = {"OpenAI-2": "OpenAI（I*9提供）", "OpenAI-IE9": "OpenAI（I*9提供）"}
+OPENAI_PROVIDERS = {"OpenAI-2": "I*9", "OpenAI-IE9": "I*9"}
 RELAY_ALIAS = {"刀": "c"}
 FAM_PIN = ["gpt", "claude", "gemini", "grok", "glm", "kimi", "deepseek"]
 AGENTS = {"traecode": "TraeCode", "codebuddy": "Codebuddy", "pi": "Pi", "codex": "Codex"}
@@ -141,9 +141,9 @@ def tokens(channel: str):
 
 
 def classify(channel: str):
-    for k, v in OPENAI_ALIAS.items():
+    for k, nick in OPENAI_PROVIDERS.items():
         if channel == k or channel.startswith(k + "-"):
-            return dict(relay=v, agent="", channel="", think="", extra="", base=True)
+            return dict(relay="OpenAI", agent="", channel="", think="", extra=f"由{nick}提供", base=True)
     if channel.lower().startswith("openai"):
         return dict(relay=channel, agent="", channel="", think="", extra="", base=True)
     agent = ch = think = ""
@@ -319,6 +319,8 @@ def build():
     assert fams[:7] == FAM_PIN, fams
     assert fams[7:] == ["qwen", "hy", "seed", "longcat", "minimax", "mimo"], fams
     assert any(it["family"] == "mimo" and "E••••••e" in (it.get("extra") or "") and it["think"] == "max" for it in items)
+    assert any(it["relay"] == "OpenAI" and it["extra"] == "由I*9提供" and it["base"] for it in items)
+    assert not any("I*9提供" in (it["relay"] or "") for it in items)
     assert any(it["model"] == "deepseek-v4.1-flash" and it["agent"] == "Codebuddy" and it["think"] == "xhigh" and it["secs"] == 99 for it in items)
     assert any(it["model"] == "gemini-3.8-flash" and it["blurb"] == "唯一有声音的" for it in items)
     claude_models = list(dict.fromkeys(it["model"] for it in items if it["family"] == "claude"))
@@ -374,7 +376,8 @@ const fmt=s=>s==null?"?":`${Math.floor(s/60)}分${s%60}秒`;
 const title=x=>x.relay||x.agent||x.channel||"?";
 const img=(f,cls)=>SITE[f]?`<img class="${cls}" src="${ico(SITE[f])}" alt="" width="${cls==="ico-lg"?36:18}" height="${cls==="ico-lg"?36:18}">`:"";
 const chip=(label,n,on,attr,f,date)=>`<button type="button" class="btn btn-sm chip ${on?"btn-primary":"btn-outline-secondary"} d-inline-flex align-items-center gap-2" ${attr}>${f?img(f,"ico"):""}<span class="name">${esc(label)}</span>${date?`<span class="text-secondary">${esc(date)}</span>`:""}<span class="badge rounded-pill text-bg-dark">${n}次</span></button>`;
-const tags=x=>[x.agent&&x.relay?["primary",x.agent]:null,x.channel?["success",x.channel]:null,x.think?["think","思考 · "+x.think]:null,x.extra?["secondary",x.extra]:null].filter(Boolean)
+const extraLab=t=>/^由.+提供$/.test(t)?"提供人 · "+t.slice(1,-2):t;
+const tags=x=>[x.agent&&x.relay?["primary",x.agent]:null,x.channel?["success",x.channel]:null,x.think?["think","思考 · "+x.think]:null,x.extra?["secondary",extraLab(x.extra)]:null].filter(Boolean)
   .map(([c,t])=>c==="think"?`<span class="badge badge-think">${esc(t)}</span>`:`<span class="badge text-bg-${c}">${esc(t)}</span>`).join(" ");
 const card=x=>`<div class="card h-100${x.base?" base":""}">
   <div class="card-header py-2 d-flex justify-content-between align-items-start gap-2" onclick="window.open('${x.file}','_blank')" style="cursor:pointer">
