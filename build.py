@@ -27,40 +27,40 @@ DISPLAY = {
     "deepseek-v4.1flash": "deepseek-v4.1-flash",
     "deepseek-v4pro": "deepseek-v4-pro",
 }
-RELEASE = {  # 北京时间：OpenRouter created 转 UTC+8 日历日；seed-2.1-pro 用官网 2026-06-23
+RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日（国产=北京，美厂=其本地标注日）；与 OR 上架日不一致时以官方为准
     "claude-fable-5": "2026-06-09",
-    "claude-fable-5.1": "2026-09-02",
-    "claude-opus-4.6": "2026-02-04",
-    "claude-opus-5": "2026-07-25",
+    "claude-fable-5.1": "2026-09-01",
+    "claude-opus-4.6": "2026-02-05",
+    "claude-opus-5": "2026-07-24",
     "claude-sonnet-4.6": "2026-02-17",
-    "claude-sonnet-5": "2026-07-01",
+    "claude-sonnet-5": "2026-06-30",
     "deepseek-v4.1flash": "2026-09-10",
     "deepseek-v4flash": "2026-07-31",
-    "deepseek-v4pro": "2026-08-12",
+    "deepseek-v4pro": "2026-08-13",
     "gemini-3.8-flash": "2026-09-02",
-    "glm-5.2": "2026-06-17",
-    "glm-5.3": "2026-08-19",
+    "glm-5.2": "2026-06-16",
+    "glm-5.3": "2026-08-14",
     "glm-5.3-flash": "2026-08-26",
-    "gpt-5.5": "2026-04-25",
+    "gpt-5.5": "2026-04-23",
     "gpt-5.6-luna": "2026-07-09",
     "gpt-5.6-sol": "2026-07-09",
     "gpt-5.6-terra": "2026-07-09",
-    "gpt-6-astra": "2026-09-05",
+    "gpt-6-astra": "2026-09-03",
     "grok-4.6": "2026-08-12",
     "hy3": "2026-07-06",
     "hy4-preview": "2026-08-28",
     "kimi-k2.7-code": "2026-06-12",
     "kimi-k3": "2026-07-16",
-    "longcat-2.0": "2026-07-20",
+    "longcat-2.0": "2026-06-30",
     "minimax-m3": "2026-06-01",
-    "qwen-3.7-plus": "2026-06-03",
-    "qwen-3.8-flash": "2026-08-27",
-    "qwen-3.8-max": "2026-09-04",
+    "qwen-3.7-plus": "2026-06-02",
+    "qwen-3.8-flash": "2026-08-26",
+    "qwen-3.8-max": "2026-08-03",
     "seed-2.1-pro": "2026-06-23",
-    "seed-2.1-turbo": "2026-08-13",
-    "seed-code": "2026-08-13",
-    "mimo-v2.5": "2026-04-23",
-    "mimo-v2.5-pro": "2026-04-23",
+    "seed-2.1-turbo": "2026-06-23",
+    "seed-code": "2026-02-14",
+    "mimo-v2.5": "2026-04-22",
+    "mimo-v2.5-pro": "2026-04-27",
 }
 G56_ORDER = {"gpt-5.6-sol": 0, "gpt-5.6-terra": 1, "gpt-5.6-luna": 2}
 THINK_DEFAULT = {
@@ -314,10 +314,10 @@ def build():
     assert len(astra) == 19 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
-    assert any(it["model"] == "deepseek-v4-pro" and it["released"] == "2026-08-12" for it in items)
+    assert any(it["model"] == "deepseek-v4-pro" and it["released"] == "2026-08-13" for it in items)
     fams = list(dict.fromkeys(it["family"] for it in items))
     assert fams[:7] == FAM_PIN, fams
-    assert fams[7:] == ["qwen", "hy", "seed", "longcat", "minimax", "mimo"], fams
+    assert fams[7:] == ["hy", "qwen", "longcat", "seed", "minimax", "mimo"], fams
     assert any(it["family"] == "mimo" and "E••••••e" in (it.get("extra") or "") and it["think"] == "max" for it in items)
     assert any(it["relay"] == "OpenAI" and it["extra"] == "由I*9提供" and it["base"] for it in items)
     assert not any("I*9提供" in (it["relay"] or "") for it in items)
@@ -358,7 +358,8 @@ TEMPLATE = r"""<!doctype html>
     <div>
       <h1 class="h4 mb-1">鹈鹕骑自行车 · 模型对比</h1>
       <p class="small mb-1 d-flex flex-wrap align-items-center gap-2"><span id="p2t">创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，你不需要任何测试</span><button type="button" class="btn btn-sm btn-outline-secondary" data-copy="p2">复制</button></p>
-      <p class="text-secondary small mb-0">发布日为北京时间：OpenRouter <code>created</code> 时间戳转 UTC+8 日历日（与 OR 页面 UTC 日可能差一天）。seed-2.1-pro 用官网 Seed2.1 发布日 2026-06-23。</p>
+      <p class="text-secondary small mb-0">发布日为厂商官方口径（博客/新闻稿/文档所述发布日历日；国产为北京日，美厂为官方标注日），与 OpenRouter 上架日不一致时以官方为准。</p>
+      <p class="text-secondary small mb-0">与 OR 差异：qwen-3.8-max 官方 08-03（OR 的 0902 为 9 月快照）；seed-turbo/pro 06-23、seed-code 02-14（OR 8 月才上架）；longcat-2.0 06-30；glm-5.3 08-14；gpt-6-astra 09-03；gpt-5.5 04-23。</p>
     </div>
   </div>
   <div class="d-flex flex-wrap gap-2 mb-3" id="f"></div>
