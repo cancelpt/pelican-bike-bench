@@ -16,8 +16,9 @@ SEC = re.compile(r"(\d+(?:\.\d+)?)\s*s\b", re.I)
 OPENAI_PROVIDERS = {"OpenAI-2": "I*9", "OpenAI-IE9": "I*9"}
 RELAY_ALIAS = {"刀": "c"}
 FAM_PIN = ["gpt", "claude", "gemini", "grok", "glm", "kimi", "deepseek"]
-AGENTS = {"traecode": "TraeCode", "codebuddy": "Codebuddy", "pi": "Pi", "codex": "Codex"}
-CHANNELS = {"cursor": "cursor", "antigravity": "antigravity", "ccmax": "ccmax", "gemini-cli": "gemini-cli"}
+AGENTS = {"traecode": "TraeCode", "codebuddy": "Codebuddy", "pi": "Pi", "pi agent": "Pi", "codex": "Codex"}
+CHANNELS = {"cursor": "cursor", "antigravity": "antigravity", "ccmax": "ccmax", "gemini-cli": "gemini-cli", "openrouter": "OpenRouter"}
+HARNESS = {"gpt": "Codex", "claude": "Claude Code", "gemini": "Gemini CLI", "grok": "Grok Build"}
 THINKING = {"极高": "极高", "默认": "默认", "高": "高", "high": "high", "xhigh": "xhigh", "max": "max"}
 EXTRA = {"官key": "官key", "官定": "官定", "官订": "官订"}
 TIER = {"平价", "plus", "pro"}
@@ -47,6 +48,7 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "gpt-5.6-terra": "2026-07-09",
     "gpt-6-astra": "2026-09-03",
     "grok-4.6": "2026-08-12",
+    "grok-4.7": "2026-09-21",
     "hy3": "2026-07-06",
     "hy4-preview": "2026-08-28",
     "kimi-k2.7-code": "2026-06-12",
@@ -61,6 +63,8 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "seed-code": "2026-02-14",
     "mimo-v2.5": "2026-04-22",
     "mimo-v2.5-pro": "2026-04-27",
+    "mimo-v2.6-flash": "2026-09-22",
+    "mimo-v2.6-pro": "2026-09-22",
 }
 G56_ORDER = {"gpt-5.6-sol": 0, "gpt-5.6-terra": 1, "gpt-5.6-luna": 2}
 THINK_DEFAULT = {
@@ -87,6 +91,7 @@ def parse_run(name):
         (MEN, lambda m: int(m.group(1)) * 60 + int(m.group(2))),
         (HOUR, lambda m: int(m.group(1)) * 3600),
         (MINU, lambda m: int(m.group(1)) * 60),
+        (re.compile(r"(\d+)\s*m\b", re.I), lambda m: int(m.group(1)) * 60),
         (SEC, lambda m: int(round(float(m.group(1))))),
     ):
         m = rx.search(name)
@@ -235,6 +240,12 @@ def build():
             rel = src.relative_to(model)
             channel, secs, note = run_meta(rel)
             lab = classify(channel)
+            fam = family_of(model.name)
+            if not lab.get("agent") and fam in HARNESS:
+                lab["agent"] = HARNESS[fam]
+            if lab.get("channel") == "gemini-cli":
+                lab["agent"] = "Gemini CLI"
+                lab["channel"] = ""
             if not lab.get("think"):
                 lab["think"] = THINK_DEFAULT.get(model.name, "")
             if model.name == "grok-4.6":
@@ -310,14 +321,21 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 33 and len(items) == 64 and not leftover, (n_models, len(items), leftover[:5])
-    assert len(astra) == 19 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
+    assert n_models == 36 and len(items) == 68 and not leftover, (n_models, len(items), leftover[:5])
+    assert len(astra) == 20 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
     assert any(it["model"] == "deepseek-v4-pro" and it["released"] == "2026-08-13" for it in items)
     fams = list(dict.fromkeys(it["family"] for it in items))
     assert fams[:7] == FAM_PIN, fams
-    assert fams[7:] == ["hy", "qwen", "longcat", "seed", "minimax", "mimo"], fams
+    assert fams[7:] == ["mimo", "hy", "qwen", "longcat", "seed", "minimax"], fams
+    assert any(it["model"] == "mimo-v2.6-pro" and it["agent"] == "Pi" and it["think"] == "xhigh" and it["secs"] == 125 and it["released"] == "2026-09-22" for it in items)
+    assert any(it["model"] == "mimo-v2.6-flash" and it["secs"] == 240 and it["agent"] == "Pi" and it["channel"] == "OpenRouter" and not it["relay"] for it in items)
+    assert all(it["agent"] == "Codex" for it in items if it["family"] == "gpt")
+    assert all(it["agent"] == "Claude Code" for it in items if it["family"] == "claude")
+    assert all(it["agent"] == "Gemini CLI" and not it["channel"] for it in items if it["family"] == "gemini")
+    assert all(it["agent"] == "Grok Build" and it["think"] == "xhigh" for it in items if it["model"] == "grok-4.6")
+    assert any(it["model"] == "grok-4.7" and it["agent"] == "Pi" and it["channel"] == "OpenRouter" and it["think"] == "xhigh" and it["secs"] == 1320 and it["released"] == "2026-09-21" for it in items)
     assert any(it["family"] == "mimo" and "E••••••e" in (it.get("extra") or "") and it["think"] == "max" for it in items)
     assert any(it["relay"] == "OpenAI" and it["extra"] == "由I*9提供" and it["base"] for it in items)
     assert not any("I*9提供" in (it["relay"] or "") for it in items)
@@ -374,11 +392,11 @@ let fam=D[0].family, model="", open=new Set();
 const fams=[...new Set(D.map(x=>x.family))];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const fmt=s=>s==null?"?":`${Math.floor(s/60)}分${s%60}秒`;
-const title=x=>x.relay||x.agent||x.channel||"?";
+const title=x=>x.agent||x.relay||x.channel||"?";
 const img=(f,cls)=>SITE[f]?`<img class="${cls}" src="${ico(SITE[f])}" alt="" width="${cls==="ico-lg"?36:18}" height="${cls==="ico-lg"?36:18}">`:"";
 const chip=(label,n,on,attr,f,date)=>`<button type="button" class="btn btn-sm chip ${on?"btn-primary":"btn-outline-secondary"} d-inline-flex align-items-center gap-2" ${attr}>${f?img(f,"ico"):""}<span class="name">${esc(label)}</span>${date?`<span class="text-secondary">${esc(date)}</span>`:""}<span class="badge rounded-pill text-bg-dark">${n}次</span></button>`;
 const extraLab=t=>/^由.+提供$/.test(t)?"提供人 · "+t.slice(1,-2):t;
-const tags=x=>[x.agent&&x.relay?["primary",x.agent]:null,x.channel?["success",x.channel]:null,x.think?["think","思考 · "+x.think]:null,x.extra?["secondary",extraLab(x.extra)]:null].filter(Boolean)
+const tags=x=>[x.relay&&x.agent?["secondary",x.relay]:null,x.channel?["success",x.channel]:null,x.think?["think","思考 · "+x.think]:null,x.extra?["secondary",extraLab(x.extra)]:null].filter(Boolean)
   .map(([c,t])=>c==="think"?`<span class="badge badge-think">${esc(t)}</span>`:`<span class="badge text-bg-${c}">${esc(t)}</span>`).join(" ");
 const card=x=>`<div class="card h-100${x.base?" base":""}">
   <div class="card-header py-2 d-flex justify-content-between align-items-start gap-2" onclick="window.open('${x.file}','_blank')" style="cursor:pointer">
