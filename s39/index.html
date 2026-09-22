@@ -1,232 +1,297 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鹈鹕骑自行车</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(to bottom, #87CEEB 0%, #F7F5F1 70%);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .container {
-            position: relative;
-            width: 800px;
-            height: 600px;
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>鹈鹕骑自行车</title>
+<style>
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 60%, #90EE90 60%, #228B22 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  svg {
+    width: 900px;
+    height: 500px;
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-            <!-- Ground -->
-            <rect x="0" y="450" width="800" height="150" fill="#8FBC8F" opacity="0.6"/>
+<svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Road markings -->
+    <pattern id="road" x="0" y="0" width="120" height="20" patternUnits="userSpaceOnUse">
+      <rect width="60" height="6" fill="#FFFF00" y="7"/>
+    </pattern>
 
-            <!-- Bicycle Group -->
-            <g id="bicycle" transform="translate(400, 350)">
-                <!-- Back Wheel -->
-                <g id="backWheel" transform="translate(-80, 0)">
-                    <circle cx="0" cy="0" r="40" fill="none" stroke="#333" stroke-width="3"/>
-                    <line x1="-28" y1="-28" x2="28" y2="28" stroke="#333" stroke-width="2">
-                        <animateTransform
-                            attributeName="transform"
-                            type="rotate"
-                            from="0 0 0"
-                            to="360 0 0"
-                            dur="1.5s"
-                            repeatCount="indefinite"/>
-                    </line>
-                    <line x1="28" y1="-28" x2="-28" y2="28" stroke="#333" stroke-width="2">
-                        <animateTransform
-                            attributeName="transform"
-                            type="rotate"
-                            from="0 0 0"
-                            to="360 0 0"
-                            dur="1.5s"
-                            repeatCount="indefinite"/>
-                    </line>
-                    <circle cx="0" cy="0" r="8" fill="#555"/>
-                </g>
+    <!-- Spinning wheel animation -->
+    <style>
+      /* Bike moves left-right cycling */
+      .bike-group {
+        animation: ride 4s linear infinite;
+      }
+      @keyframes ride {
+        0%   { transform: translateX(0px); }
+        100% { transform: translateX(0px); }
+      }
 
-                <!-- Front Wheel -->
-                <g id="frontWheel" transform="translate(80, 0)">
-                    <circle cx="0" cy="0" r="40" fill="none" stroke="#333" stroke-width="3"/>
-                    <line x1="-28" y1="-28" x2="28" y2="28" stroke="#333" stroke-width="2">
-                        <animateTransform
-                            attributeName="transform"
-                            type="rotate"
-                            from="0 0 0"
-                            to="360 0 0"
-                            dur="1.5s"
-                            repeatCount="indefinite"/>
-                    </line>
-                    <line x1="28" y1="-28" x2="-28" y2="28" stroke="#333" stroke-width="2">
-                        <animateTransform
-                            attributeName="transform"
-                            type="rotate"
-                            from="0 0 0"
-                            to="360 0 0"
-                            dur="1.5s"
-                            repeatCount="indefinite"/>
-                    </line>
-                    <circle cx="0" cy="0" r="8" fill="#555"/>
-                </g>
+      /* Wheel spin */
+      .wheel-spin {
+        animation: spin 0.6s linear infinite;
+        transform-origin: center;
+      }
 
-                <!-- Frame -->
-                <path d="M -80,0 L -20,-60 L 60,-60 L 80,0" fill="none" stroke="#3C5A78" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M -20,-60 L -80,0" fill="none" stroke="#3C5A78" stroke-width="4"/>
-                <path d="M -20,-60 L 20,0" fill="none" stroke="#3C5A78" stroke-width="4"/>
+      /* Pedal rotation */
+      .pedal-spin {
+        animation: spin 0.6s linear infinite;
+        transform-origin: 450px 340px;
+      }
 
-                <!-- Seat -->
-                <ellipse cx="-20" cy="-70" rx="20" ry="8" fill="#2E4760"/>
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
 
-                <!-- Handlebars -->
-                <line x1="60" y1="-60" x2="70" y2="-75" stroke="#3C5A78" stroke-width="3"/>
-                <line x1="70" y1="-75" x2="55" y2="-75" stroke="#3C5A78" stroke-width="3"/>
-                <line x1="70" y1="-75" x2="85" y2="-75" stroke="#3C5A78" stroke-width="3"/>
+      /* Pelican body bob */
+      .pelican-bob {
+        animation: bob 0.6s ease-in-out infinite alternate;
+      }
+      @keyframes bob {
+        from { transform: translateY(0px); }
+        to   { transform: translateY(-4px); }
+      }
 
-                <!-- Pedals and Crank -->
-                <g id="pedals" transform="translate(20, 0)">
-                    <circle cx="0" cy="0" r="6" fill="#555"/>
-                    <g id="crankArm">
-                        <line x1="0" y1="0" x2="0" y2="25" stroke="#333" stroke-width="3"/>
-                        <rect x="-8" y="20" width="16" height="10" rx="2" fill="#333"/>
-                        <animateTransform
-                            attributeName="transform"
-                            type="rotate"
-                            from="0 0 0"
-                            to="360 0 0"
-                            dur="1.5s"
-                            repeatCount="indefinite"/>
-                    </g>
-                </g>
-            </g>
+      /* Wing flap */
+      .wing-left {
+        transform-origin: 435px 295px;
+        animation: flap-left 0.6s ease-in-out infinite alternate;
+      }
+      @keyframes flap-left {
+        from { transform: rotate(-10deg); }
+        to   { transform: rotate(15deg); }
+      }
+      .wing-right {
+        transform-origin: 465px 295px;
+        animation: flap-right 0.6s ease-in-out infinite alternate;
+      }
+      @keyframes flap-right {
+        from { transform: rotate(10deg); }
+        to   { transform: rotate(-15deg); }
+      }
 
-            <!-- Pelican Group -->
-            <g id="pelican" transform="translate(400, 280)">
-                <!-- Body with bounce animation -->
-                <g id="pelicanBody">
-                    <!-- Body -->
-                    <ellipse cx="0" cy="0" rx="45" ry="55" fill="#FFEFD5"/>
-                    <ellipse cx="0" cy="0" rx="40" ry="50" fill="#FFE4B5"/>
+      /* Pouch sway */
+      .pouch {
+        transform-origin: 493px 330px;
+        animation: pouch-sway 0.6s ease-in-out infinite alternate;
+      }
+      @keyframes pouch-sway {
+        from { transform: rotate(-5deg); }
+        to   { transform: rotate(5deg); }
+      }
 
-                    <!-- Wing -->
-                    <path d="M -25,-10 Q -60,-5 -70,15 Q -60,25 -30,20 Z" fill="#F5DEB3" opacity="0.9"/>
+      /* Clouds drift */
+      .cloud1 {
+        animation: cloud-move1 12s linear infinite;
+      }
+      .cloud2 {
+        animation: cloud-move2 18s linear infinite;
+      }
+      @keyframes cloud-move1 {
+        from { transform: translateX(0px); }
+        to   { transform: translateX(-950px); }
+      }
+      @keyframes cloud-move2 {
+        from { transform: translateX(200px); }
+        to   { transform: translateX(-750px); }
+      }
 
-                    <!-- Neck -->
-                    <ellipse cx="15" cy="-40" rx="12" ry="25" fill="#FFE4B5"/>
+      /* Road scroll */
+      .road-anim {
+        animation: road-scroll 2s linear infinite;
+      }
+      @keyframes road-scroll {
+        from { transform: translateX(0px); }
+        to   { transform: translateX(-120px); }
+      }
+    </style>
+  </defs>
 
-                    <!-- Head -->
-                    <ellipse cx="20" cy="-60" rx="20" ry="22" fill="#FFEFD5"/>
+  <!-- Sky background -->
+  <rect width="900" height="300" fill="#87CEEB"/>
+  <!-- Ground -->
+  <rect y="300" width="900" height="200" fill="#4a7c59"/>
+  <!-- Road surface -->
+  <rect y="360" width="900" height="80" fill="#555"/>
+  <!-- Road dashes - scrolling -->
+  <g class="road-anim">
+    <rect x="0"   y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+    <rect x="120" y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+    <rect x="240" y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+    <rect x="360" y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+    <rect x="480" y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+    <rect x="600" y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+    <rect x="720" y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+    <rect x="840" y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+    <rect x="960" y="397" width="80" height="6" fill="#FFE000" rx="2"/>
+  </g>
+  <!-- Road edges -->
+  <rect y="360" width="900" height="5" fill="#888"/>
+  <rect y="435" width="900" height="5" fill="#888"/>
 
-                    <!-- Eye -->
-                    <circle cx="28" cy="-65" r="4" fill="#1E2227"/>
-                    <circle cx="30" cy="-66" r="1.5" fill="white"/>
+  <!-- Clouds -->
+  <g class="cloud1">
+    <ellipse cx="150" cy="80" rx="60" ry="30" fill="white" opacity="0.9"/>
+    <ellipse cx="120" cy="90" rx="40" ry="25" fill="white" opacity="0.9"/>
+    <ellipse cx="185" cy="88" rx="45" ry="22" fill="white" opacity="0.9"/>
+    <!-- repeat cloud shifted 900px right for seamless loop -->
+    <ellipse cx="1050" cy="80" rx="60" ry="30" fill="white" opacity="0.9"/>
+    <ellipse cx="1020" cy="90" rx="40" ry="25" fill="white" opacity="0.9"/>
+    <ellipse cx="1085" cy="88" rx="45" ry="22" fill="white" opacity="0.9"/>
+  </g>
+  <g class="cloud2">
+    <ellipse cx="600" cy="60" rx="70" ry="28" fill="white" opacity="0.85"/>
+    <ellipse cx="565" cy="72" rx="50" ry="22" fill="white" opacity="0.85"/>
+    <ellipse cx="640" cy="70" rx="55" ry="20" fill="white" opacity="0.85"/>
+    <ellipse cx="-300" cy="60" rx="70" ry="28" fill="white" opacity="0.85"/>
+    <ellipse cx="-335" cy="72" rx="50" ry="22" fill="white" opacity="0.85"/>
+    <ellipse cx="-260" cy="70" rx="55" ry="20" fill="white" opacity="0.85"/>
+  </g>
 
-                    <!-- Beak (upper) -->
-                    <path d="M 30,-55 Q 65,-50 75,-48 Q 70,-42 30,-47 Z" fill="#FF8C00"/>
+  <!-- Sun -->
+  <circle cx="800" cy="80" r="45" fill="#FFD700" opacity="0.95"/>
+  <g stroke="#FFD700" stroke-width="3" opacity="0.7">
+    <line x1="800" y1="22" x2="800" y2="10"/>
+    <line x1="800" y1="138" x2="800" y2="150"/>
+    <line x1="742" y1="80" x2="730" y2="80"/>
+    <line x1="858" y1="80" x2="870" y2="80"/>
+    <line x1="759" y1="39" x2="750" y2="30"/>
+    <line x1="841" y1="121" x2="850" y2="130"/>
+    <line x1="841" y1="39" x2="850" y2="30"/>
+    <line x1="759" y1="121" x2="750" y2="130"/>
+  </g>
 
-                    <!-- Beak pouch (lower) -->
-                    <path d="M 30,-47 Q 70,-42 75,-48 Q 70,-35 65,-30 Q 50,-38 30,-45 Z" fill="#FFA500" opacity="0.7">
-                        <animate
-                            attributeName="d"
-                            values="M 30,-47 Q 70,-42 75,-48 Q 70,-35 65,-30 Q 50,-38 30,-45 Z;
-                                    M 30,-47 Q 70,-42 75,-48 Q 72,-37 67,-32 Q 52,-40 30,-45 Z;
-                                    M 30,-47 Q 70,-42 75,-48 Q 70,-35 65,-30 Q 50,-38 30,-45 Z"
-                            dur="2s"
-                            repeatCount="indefinite"/>
-                    </path>
+  <!-- ========== BICYCLE + PELICAN GROUP ========== -->
+  <g>
+    <!-- BICYCLE FRAME -->
+    <!-- Rear wheel -->
+    <g class="wheel-spin" style="transform-origin: 370px 400px;">
+      <circle cx="370" cy="400" r="55" fill="none" stroke="#333" stroke-width="5"/>
+      <circle cx="370" cy="400" r="10" fill="#555"/>
+      <!-- spokes -->
+      <line x1="370" y1="345" x2="370" y2="455" stroke="#555" stroke-width="2.5"/>
+      <line x1="315" y1="400" x2="425" y2="400" stroke="#555" stroke-width="2.5"/>
+      <line x1="331" y1="361" x2="409" y2="439" stroke="#555" stroke-width="2.5"/>
+      <line x1="409" y1="361" x2="331" y2="439" stroke="#555" stroke-width="2.5"/>
+      <line x1="331" y1="381" x2="409" y2="419" stroke="#555" stroke-width="1.5" opacity="0.5"/>
+      <line x1="331" y1="419" x2="409" y2="381" stroke="#555" stroke-width="1.5" opacity="0.5"/>
+    </g>
+    <!-- Front wheel -->
+    <g class="wheel-spin" style="transform-origin: 540px 400px;">
+      <circle cx="540" cy="400" r="55" fill="none" stroke="#333" stroke-width="5"/>
+      <circle cx="540" cy="400" r="10" fill="#555"/>
+      <line x1="540" y1="345" x2="540" y2="455" stroke="#555" stroke-width="2.5"/>
+      <line x1="485" y1="400" x2="595" y2="400" stroke="#555" stroke-width="2.5"/>
+      <line x1="501" y1="361" x2="579" y2="439" stroke="#555" stroke-width="2.5"/>
+      <line x1="579" y1="361" x2="501" y2="439" stroke="#555" stroke-width="2.5"/>
+      <line x1="501" y1="381" x2="579" y2="419" stroke="#555" stroke-width="1.5" opacity="0.5"/>
+      <line x1="501" y1="419" x2="579" y2="381" stroke="#555" stroke-width="1.5" opacity="0.5"/>
+    </g>
+    <!-- Tires highlight -->
+    <circle cx="370" cy="400" r="55" fill="none" stroke="#111" stroke-width="7" stroke-dasharray="8 6" opacity="0.15"/>
+    <circle cx="540" cy="400" r="55" fill="none" stroke="#111" stroke-width="7" stroke-dasharray="8 6" opacity="0.15"/>
 
-                    <!-- Legs with pedaling animation -->
-                    <g id="legs">
-                        <g id="leftLeg">
-                            <line x1="-10" y1="40" x2="-15" y2="70" stroke="#FF8C00" stroke-width="4" stroke-linecap="round">
-                                <animate
-                                    attributeName="x2"
-                                    values="-15; -5; -15"
-                                    dur="1.5s"
-                                    repeatCount="indefinite"/>
-                                <animate
-                                    attributeName="y2"
-                                    values="70; 85; 70"
-                                    dur="1.5s"
-                                    repeatCount="indefinite"/>
-                            </line>
-                            <circle cx="-15" cy="70" r="4" fill="#FF6347">
-                                <animate
-                                    attributeName="cx"
-                                    values="-15; -5; -15"
-                                    dur="1.5s"
-                                    repeatCount="indefinite"/>
-                                <animate
-                                    attributeName="cy"
-                                    values="70; 85; 70"
-                                    dur="1.5s"
-                                    repeatCount="indefinite"/>
-                            </circle>
-                        </g>
+    <!-- Frame: main triangle -->
+    <!-- Chain stay: rear axle -> bottom bracket -->
+    <line x1="370" y1="400" x2="450" y2="340" stroke="#E63946" stroke-width="8" stroke-linecap="round"/>
+    <!-- Seat tube: bottom bracket -> seat -->
+    <line x1="450" y1="340" x2="430" y2="265" stroke="#E63946" stroke-width="8" stroke-linecap="round"/>
+    <!-- Down tube: bottom bracket -> head tube -->
+    <line x1="450" y1="340" x2="510" y2="290" stroke="#E63946" stroke-width="8" stroke-linecap="round"/>
+    <!-- Top tube: seat -> head -->
+    <line x1="430" y1="265" x2="510" y2="275" stroke="#E63946" stroke-width="8" stroke-linecap="round"/>
+    <!-- Seat stay: rear axle -> seat -->
+    <line x1="370" y1="400" x2="430" y2="265" stroke="#E63946" stroke-width="5" stroke-linecap="round"/>
+    <!-- Fork: head -> front axle -->
+    <line x1="510" y1="290" x2="540" y2="400" stroke="#E63946" stroke-width="7" stroke-linecap="round"/>
 
-                        <g id="rightLeg">
-                            <line x1="10" y1="40" x2="5" y2="85" stroke="#FF8C00" stroke-width="4" stroke-linecap="round">
-                                <animate
-                                    attributeName="x2"
-                                    values="5; 15; 5"
-                                    dur="1.5s"
-                                    repeatCount="indefinite"/>
-                                <animate
-                                    attributeName="y2"
-                                    values="85; 70; 85"
-                                    dur="1.5s"
-                                    repeatCount="indefinite"/>
-                            </line>
-                            <circle cx="5" cy="85" r="4" fill="#FF6347">
-                                <animate
-                                    attributeName="cx"
-                                    values="5; 15; 5"
-                                    dur="1.5s"
-                                    repeatCount="indefinite"/>
-                                <animate
-                                    attributeName="cy"
-                                    values="85; 70; 85"
-                                    dur="1.5s"
-                                    repeatCount="indefinite"/>
-                            </circle>
-                        </g>
-                    </g>
+    <!-- Seat post -->
+    <line x1="430" y1="265" x2="428" y2="240" stroke="#555" stroke-width="6" stroke-linecap="round"/>
+    <!-- Saddle -->
+    <ellipse cx="428" cy="236" rx="30" ry="8" fill="#222" rx="4"/>
 
-                    <!-- Bounce animation for entire pelican body -->
-                    <animateTransform
-                        attributeName="transform"
-                        type="translate"
-                        values="0,0; 0,-8; 0,0"
-                        dur="1.5s"
-                        repeatCount="indefinite"/>
-                </g>
-            </g>
+    <!-- Handlebar stem -->
+    <line x1="510" y1="280" x2="512" y2="255" stroke="#555" stroke-width="6" stroke-linecap="round"/>
+    <!-- Handlebar -->
+    <path d="M490,250 Q512,248 535,255" fill="none" stroke="#333" stroke-width="6" stroke-linecap="round"/>
 
-            <!-- Clouds -->
-            <g opacity="0.3">
-                <ellipse cx="150" cy="100" rx="40" ry="25" fill="white"/>
-                <ellipse cx="180" cy="95" rx="50" ry="30" fill="white"/>
-                <ellipse cx="210" cy="100" rx="35" ry="22" fill="white"/>
+    <!-- Chainring -->
+    <circle cx="450" cy="340" r="22" fill="none" stroke="#888" stroke-width="4"/>
+    <circle cx="450" cy="340" r="6" fill="#666"/>
 
-                <ellipse cx="600" cy="80" rx="45" ry="28" fill="white"/>
-                <ellipse cx="635" cy="75" rx="55" ry="32" fill="white"/>
-                <ellipse cx="670" cy="80" rx="40" ry="25" fill="white"/>
-            </g>
-        </svg>
-    </div>
+    <!-- Pedals (spinning around bottom bracket) -->
+    <g class="pedal-spin">
+      <line x1="450" y1="340" x2="450" y2="318" stroke="#333" stroke-width="4"/>
+      <rect x="443" y="314" width="14" height="5" fill="#222" rx="2"/>
+      <line x1="450" y1="340" x2="450" y2="362" stroke="#333" stroke-width="4"/>
+      <rect x="443" y="361" width="14" height="5" fill="#222" rx="2"/>
+    </g>
+
+    <!-- ========== PELICAN ========== -->
+    <g class="pelican-bob">
+      <!-- Pelican body (sitting on saddle) -->
+      <ellipse cx="445" cy="220" rx="38" ry="30" fill="white" stroke="#ddd" stroke-width="1.5"/>
+
+      <!-- Wing left -->
+      <g class="wing-left">
+        <ellipse cx="415" cy="215" rx="28" ry="13" fill="#f0f0f0" stroke="#ccc" stroke-width="1" transform="rotate(-20, 430, 210)"/>
+      </g>
+      <!-- Wing right -->
+      <g class="wing-right">
+        <ellipse cx="475" cy="215" rx="28" ry="13" fill="#f0f0f0" stroke="#ccc" stroke-width="1" transform="rotate(20, 460, 210)"/>
+      </g>
+
+      <!-- Tail feathers -->
+      <ellipse cx="415" cy="240" rx="18" ry="9" fill="#e0e0e0" transform="rotate(-30, 415, 235)"/>
+
+      <!-- Neck -->
+      <ellipse cx="460" cy="195" rx="16" ry="22" fill="white" stroke="#ddd" stroke-width="1"/>
+
+      <!-- Head -->
+      <circle cx="475" cy="175" r="22" fill="white" stroke="#ddd" stroke-width="1.5"/>
+
+      <!-- Eye -->
+      <circle cx="483" cy="170" r="5" fill="#FF8C00"/>
+      <circle cx="484" cy="169" r="3" fill="#222"/>
+      <circle cx="485" cy="168" r="1" fill="white"/>
+
+      <!-- Beak (upper) -->
+      <path d="M485,180 Q520,175 530,185 Q518,188 485,185 Z" fill="#FF8C00"/>
+      <!-- Beak tip hook -->
+      <path d="M527,185 Q535,185 532,192" fill="none" stroke="#E65C00" stroke-width="2.5" stroke-linecap="round"/>
+
+      <!-- Pouch (throat sac) -->
+      <g class="pouch">
+        <path d="M487,185 Q510,190 515,205 Q510,218 495,220 Q485,218 485,205 Z" fill="#FFDDA0" stroke="#E8AA60" stroke-width="1.5"/>
+      </g>
+
+      <!-- Crown feathers -->
+      <path d="M467,154 Q470,140 473,135" fill="none" stroke="#ddd" stroke-width="3" stroke-linecap="round"/>
+      <path d="M472,152 Q478,137 480,132" fill="none" stroke="#ddd" stroke-width="3" stroke-linecap="round"/>
+      <path d="M477,153 Q485,140 487,136" fill="none" stroke="#ddd" stroke-width="2.5" stroke-linecap="round"/>
+
+      <!-- Feet on pedals -->
+      <!-- Left foot -->
+      <path d="M437,248 L437,270 Q437,275 425,278 L418,278" stroke="#FF8C00" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- Right foot -->
+      <path d="M453,248 L453,268 Q453,273 465,276 L472,276" stroke="#FF8C00" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Title -->
+  <text x="450" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#2c5f2e">🐦 鹈鹕骑自行车</text>
+</svg>
 </body>
 </html>
