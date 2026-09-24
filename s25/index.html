@@ -1,396 +1,587 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>鹈鹕骑自行车 · SVG 2D 动画</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#bfe5e8">
+  <title>Pelican Coast Ride</title>
   <style>
     :root {
       color-scheme: light;
-      --ink: #17324a;
-      --paper: #fff7e9;
+      font-family: Inter, ui-rounded, "Avenir Next", "Segoe UI", sans-serif;
+      background: #bfe5e8;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html, body {
+    html,
+    body {
+      width: 100%;
+      min-width: 280px;
+      height: 100%;
       margin: 0;
-      min-height: 100%;
+      overflow: hidden;
     }
 
     body {
-      display: grid;
-      place-items: center;
-      min-height: 100vh;
-      padding: 24px;
-      overflow-x: hidden;
-      background:
-        radial-gradient(circle at 15% 10%, rgba(255, 255, 255, .72), transparent 28%),
-        linear-gradient(145deg, #f4c4a2 0%, #8fc9d4 52%, #436e8e 100%);
-      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      background: #bfe5e8;
     }
 
-    .scene-card {
-      width: min(1180px, 100%);
-      padding: 14px;
-      border: 1px solid rgba(255, 255, 255, .65);
-      border-radius: 28px;
-      background: rgba(255, 250, 239, .74);
-      box-shadow: 0 30px 70px rgba(25, 47, 67, .27), inset 0 1px 0 rgba(255, 255, 255, .8);
-      backdrop-filter: blur(12px);
+    .stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      isolation: isolate;
+      overflow: hidden;
+      background: #bfe5e8;
     }
 
-    svg {
+    .scene {
       display: block;
       width: 100%;
-      height: auto;
-      overflow: hidden;
-      border-radius: 20px;
-      background: var(--paper);
+      height: 100%;
+    }
+
+    .playback {
+      position: absolute;
+      z-index: 4;
+      top: max(18px, env(safe-area-inset-top));
+      right: max(18px, env(safe-area-inset-right));
+      display: grid;
+      width: 46px;
+      height: 46px;
+      padding: 0;
+      place-items: center;
+      border: 1px solid rgb(32 58 64 / 22%);
+      border-radius: 50%;
+      color: #203a40;
+      background: rgb(255 253 246 / 82%);
+      box-shadow: 0 8px 24px rgb(32 58 64 / 14%);
+      font: inherit;
+      font-size: 19px;
+      line-height: 1;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: transform 160ms ease, background-color 160ms ease;
+    }
+
+    .playback:hover {
+      transform: translateY(-2px);
+      background: #fffdf6;
+    }
+
+    .playback:focus-visible {
+      outline: 3px solid #e85f46;
+      outline-offset: 3px;
+    }
+
+    .sky-stripe {
+      opacity: 0.24;
+    }
+
+    .sun-rays {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: sun-turn 24s linear infinite;
     }
 
     .cloud {
-      animation: cloud-drift 26s linear infinite;
-      transform-box: fill-box;
-      transform-origin: center;
+      animation: cloud-drift 28s linear infinite;
     }
 
-    .cloud--slow {
+    .cloud--two {
       animation-duration: 36s;
-      animation-delay: -15s;
+      animation-delay: -17s;
     }
 
-    .cloud--tiny {
-      animation-duration: 20s;
-      animation-delay: -8s;
+    .cloud--three {
+      animation-duration: 43s;
+      animation-delay: -29s;
     }
 
-    .sun-glow {
-      animation: sun-pulse 4s ease-in-out infinite;
-      transform-box: fill-box;
-      transform-origin: center;
+    .wave-runner {
+      animation: wave-drift 6s linear infinite;
+    }
+
+    .shore-glint {
+      animation: glint 2.8s ease-in-out infinite alternate;
+    }
+
+    .far-sail {
+      animation: sail 18s linear infinite;
     }
 
     .road-dashes {
-      animation: road-scroll 1.15s linear infinite;
+      animation: road-run 1.05s linear infinite;
     }
 
-    .wheel-spokes,
-    .pedal-crank {
+    .speed-line {
+      animation: speed-run 1.2s linear infinite;
+    }
+
+    .speed-line--two {
+      animation-delay: -0.48s;
+    }
+
+    .speed-line--three {
+      animation-delay: -0.82s;
+    }
+
+    .ride-scale {
+      transform-box: view-box;
+      transform-origin: 600px 475px;
+    }
+
+    .ride-unit {
+      animation: rider-bob 0.58s ease-in-out infinite alternate;
+    }
+
+    .bike-shadow {
       transform-box: fill-box;
       transform-origin: center;
+      animation: shadow-breathe 0.58s ease-in-out infinite alternate;
     }
 
-    .rider {
-      animation: rider-bob .92s ease-in-out infinite;
+    .wheel-spin,
+    .crank-spin {
       transform-box: fill-box;
-      transform-origin: center bottom;
+      transform-origin: center;
+      animation: wheel-turn 0.82s linear infinite;
     }
 
-    .wing {
-      animation: wing-flap 1.55s ease-in-out infinite;
+    .crank-spin {
+      animation-duration: 0.82s;
+    }
+
+    .leg--near {
+      transform-box: view-box;
+      transform-origin: 547px 392px;
+      animation: leg-near 0.82s ease-in-out infinite alternate;
+    }
+
+    .leg--far {
+      transform-box: view-box;
+      transform-origin: 520px 393px;
+      animation: leg-far 0.82s ease-in-out infinite alternate;
+    }
+
+    .front-wing {
+      transform-box: view-box;
+      transform-origin: 552px 312px;
+      animation: wing-steer 1.16s ease-in-out infinite alternate;
+    }
+
+    .pelican-head {
+      transform-box: view-box;
+      transform-origin: 622px 208px;
+      animation: head-bob 1.16s ease-in-out infinite alternate;
+    }
+
+    .eye-lid {
       transform-box: fill-box;
-      transform-origin: 565px 350px;
+      transform-origin: center;
+      animation: blink 5.2s linear infinite;
     }
 
-    .leg-front {
-      animation: leg-front .92s ease-in-out infinite;
+    .scarf-tail {
+      transform-box: view-box;
+      transform-origin: 584px 250px;
+      animation: scarf-wave 0.72s ease-in-out infinite alternate;
+    }
+
+    .feather-tip {
+      animation: feather-ruffle 0.62s ease-in-out infinite alternate;
+    }
+
+    .feather-tip--two {
+      animation-delay: -0.26s;
+    }
+
+    .basket-flower {
       transform-box: fill-box;
-      transform-origin: 585px 423px;
+      transform-origin: bottom center;
+      animation: flower-sway 1.1s ease-in-out infinite alternate;
     }
 
-    .leg-back {
-      animation: leg-back .92s ease-in-out infinite;
-      transform-box: fill-box;
-      transform-origin: 625px 423px;
+    .paused * {
+      animation-play-state: paused !important;
     }
 
-    .feather-shimmer {
-      animation: feather-shimmer 2.6s ease-in-out infinite;
+    @keyframes sun-turn {
+      to { transform: rotate(360deg); }
     }
 
     @keyframes cloud-drift {
-      0% { transform: translateX(-160px); }
-      100% { transform: translateX(1380px); }
+      from { transform: translateX(-180px); }
+      to { transform: translateX(1380px); }
     }
 
-    @keyframes sun-pulse {
-      0%, 100% { opacity: .58; transform: scale(1); }
-      50% { opacity: .86; transform: scale(1.08); }
+    @keyframes wave-drift {
+      from { transform: translateX(0); }
+      to { transform: translateX(-180px); }
     }
 
-    @keyframes road-scroll {
-      to { stroke-dashoffset: -190; }
+    @keyframes glint {
+      from { opacity: 0.35; }
+      to { opacity: 0.85; }
+    }
+
+    @keyframes sail {
+      from { transform: translateX(-190px); }
+      to { transform: translateX(1360px); }
+    }
+
+    @keyframes road-run {
+      from { transform: translateX(0); }
+      to { transform: translateX(-240px); }
+    }
+
+    @keyframes speed-run {
+      0% { transform: translateX(220px); opacity: 0; }
+      20% { opacity: 0.65; }
+      100% { transform: translateX(-500px); opacity: 0; }
     }
 
     @keyframes rider-bob {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
+      from { transform: translateY(0); }
+      to { transform: translateY(-5px); }
     }
 
-    @keyframes wing-flap {
-      0%, 100% { transform: rotate(0deg); }
-      45% { transform: rotate(-5deg); }
-      72% { transform: rotate(2deg); }
+    @keyframes shadow-breathe {
+      from { transform: scaleX(1); opacity: 0.16; }
+      to { transform: scaleX(0.94); opacity: 0.11; }
     }
 
-    @keyframes leg-front {
-      0%, 100% { transform: rotate(-9deg); }
-      50% { transform: rotate(18deg); }
+    @keyframes wheel-turn {
+      to { transform: rotate(360deg); }
     }
 
-    @keyframes leg-back {
-      0%, 100% { transform: rotate(17deg); }
-      50% { transform: rotate(-11deg); }
+    @keyframes leg-near {
+      from { transform: rotate(14deg); }
+      to { transform: rotate(-15deg); }
     }
 
-    @keyframes feather-shimmer {
-      0%, 100% { opacity: .4; }
-      50% { opacity: 1; }
+    @keyframes leg-far {
+      from { transform: rotate(-14deg); }
+      to { transform: rotate(15deg); }
+    }
+
+    @keyframes wing-steer {
+      from { transform: rotate(1deg); }
+      to { transform: rotate(-3deg); }
+    }
+
+    @keyframes head-bob {
+      from { transform: rotate(-1deg) translateY(0); }
+      to { transform: rotate(1deg) translateY(2px); }
+    }
+
+    @keyframes blink {
+      0%, 46%, 50%, 100% { transform: scaleY(1); }
+      48% { transform: scaleY(0.08); }
+    }
+
+    @keyframes scarf-wave {
+      from { transform: rotate(4deg) scaleX(1); }
+      to { transform: rotate(-5deg) scaleX(0.92); }
+    }
+
+    @keyframes feather-ruffle {
+      from { transform: translateX(0); }
+      to { transform: translateX(-6px); }
+    }
+
+    @keyframes flower-sway {
+      from { transform: rotate(-3deg); }
+      to { transform: rotate(4deg); }
+    }
+
+    @media (max-aspect-ratio: 3 / 4) {
+      .ride-scale {
+        transform: scale(0.69) translateY(105px);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: .001ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
+      .stage * {
+        animation-play-state: paused !important;
       }
     }
   </style>
 </head>
 <body>
-  <main class="scene-card">
-    <svg viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
-      <title id="title">鹈鹕骑着自行车沿海边公路前进</title>
-      <desc id="desc">一只戴着红色围巾的鹈鹕踩着蓝色自行车，车轮、踏板、云朵和道路标线都在循环运动。</desc>
+  <main class="stage" id="stage">
+    <svg class="scene" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="scene-title scene-description">
+      <title id="scene-title">A pelican riding a bicycle along the coast</title>
+      <desc id="scene-description">A looping two-dimensional animation of a pelican pedaling a coral bicycle beside the sea.</desc>
 
       <defs>
-        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#72c7e2" />
-          <stop offset=".58" stop-color="#b8e2dd" />
-          <stop offset="1" stop-color="#f7c98f" />
-        </linearGradient>
-        <linearGradient id="sea" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#62a7b9" />
-          <stop offset=".5" stop-color="#86c6c4" />
-          <stop offset="1" stop-color="#4b8fa9" />
-        </linearGradient>
-        <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#48627a" />
-          <stop offset="1" stop-color="#253a50" />
-        </linearGradient>
-        <linearGradient id="feather" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#f6fbf4" />
-          <stop offset=".62" stop-color="#d7e5e5" />
-          <stop offset="1" stop-color="#9bb5bf" />
-        </linearGradient>
-        <linearGradient id="beak" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#ffdb78" />
-          <stop offset=".48" stop-color="#f5a35d" />
-          <stop offset="1" stop-color="#dc6c63" />
-        </linearGradient>
-        <linearGradient id="scarf" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#d64f58" />
-          <stop offset=".55" stop-color="#ef7264" />
-          <stop offset="1" stop-color="#bb394f" />
-        </linearGradient>
-        <filter id="soft-shadow" x="-20%" y="-30%" width="140%" height="170%">
-          <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#143049" flood-opacity=".23" />
+        <clipPath id="sea-clip">
+          <rect x="0" y="286" width="1200" height="181" />
+        </clipPath>
+        <clipPath id="road-clip">
+          <rect x="0" y="493" width="1200" height="207" />
+        </clipPath>
+        <filter id="soft-shadow" x="-30%" y="-80%" width="160%" height="260%">
+          <feGaussianBlur stdDeviation="8" />
         </filter>
-        <filter id="small-shadow" x="-30%" y="-40%" width="160%" height="180%">
-          <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#142e40" flood-opacity=".3" />
-        </filter>
-        <pattern id="water-lines" width="145" height="30" patternUnits="userSpaceOnUse">
-          <path d="M-25 16 C8 4 33 27 65 15 S121 4 170 17" fill="none" stroke="#d5f0e3" stroke-opacity=".42" stroke-width="3" />
-        </pattern>
       </defs>
 
-      <!-- sky and distant landscape -->
-      <rect width="1200" height="720" fill="url(#sky)" />
-      <circle class="sun-glow" cx="996" cy="126" r="92" fill="#fff6bb" opacity=".58" />
-      <circle cx="996" cy="126" r="57" fill="#fff5b1" opacity=".93" />
+      <!-- Coastal sky -->
+      <rect width="1200" height="700" fill="#bfe5e8" />
+      <path class="sky-stripe" d="M0 90 C250 35 410 82 610 45 C820 7 991 49 1200 18 L1200 0 L0 0 Z" fill="#fffdf6" />
+      <path class="sky-stripe" d="M0 244 C207 207 382 250 572 210 C808 160 978 222 1200 169" fill="none" stroke="#fffdf6" stroke-width="34" />
 
-      <g class="cloud cloud--slow" fill="#fffef1" opacity=".82">
-        <path d="M-130 188 C-105 153 -60 149 -33 177 C-17 128 52 123 75 174 C117 151 159 176 160 213 H-130 Z" />
-      </g>
-      <g class="cloud cloud--tiny" fill="#fffef5" opacity=".76">
-        <path d="M165 115 C184 88 223 91 238 119 C255 81 307 85 319 125 C348 113 378 133 378 160 H145 C145 140 152 124 165 115 Z" />
-      </g>
-      <g class="cloud" fill="#fffef5" opacity=".73">
-        <path d="M936 226 C953 195 997 192 1018 221 C1040 181 1100 187 1114 231 C1153 213 1193 235 1205 271 H925 C923 250 927 237 936 226 Z" />
-      </g>
-
-      <path d="M0 374 C130 306 236 342 339 382 C445 423 544 367 648 367 C758 367 810 416 921 386 C1031 356 1110 333 1200 375 V550 H0 Z" fill="#6aa9a4" opacity=".76" />
-      <path d="M0 425 C130 374 237 421 351 438 C488 458 555 411 661 417 C790 425 841 471 954 436 C1048 407 1124 399 1200 424 V553 H0 Z" fill="#488d8e" opacity=".75" />
-      <rect y="405" width="1200" height="145" fill="url(#sea)" opacity=".72" />
-      <rect y="415" width="1200" height="90" fill="url(#water-lines)" opacity=".66" />
-
-      <!-- small seabirds -->
-      <g fill="none" stroke="#3b7585" stroke-linecap="round" stroke-width="4" opacity=".62">
-        <path d="M150 304 q14 -12 28 0 q14 -12 28 0" />
-        <path d="M248 268 q10 -9 20 0 q10 -9 20 0" />
-        <path d="M1074 329 q13 -11 26 0 q13 -11 26 0" />
+      <g transform="translate(1010 112)">
+        <g class="sun-rays" stroke="#f4b83f" stroke-width="7" stroke-linecap="round">
+          <path d="M0 -58 V-76 M0 58 V76 M-58 0 H-76 M58 0 H76" />
+          <path d="M-41 -41 L-54 -54 M41 41 L54 54 M41 -41 L54 -54 M-41 41 L-54 54" />
+        </g>
+        <circle r="39" fill="#f5c451" />
+        <circle cx="-11" cy="-11" r="9" fill="#ffd873" opacity="0.75" />
       </g>
 
-      <!-- roadside grass -->
-      <path d="M0 524 C135 515 243 527 356 520 C485 511 583 527 710 516 C831 506 930 523 1200 512 V572 H0 Z" fill="#335f66" opacity=".68" />
-      <g fill="none" stroke="#c5d889" stroke-linecap="round" stroke-width="5" opacity=".8">
-        <path d="M85 548 l-7 -26 M87 549 l12 -30 M167 549 l-4 -32 M170 549 l16 -25 M1002 545 l-4 -31 M1006 546 l18 -30 M1108 543 l-4 -28 M1113 544 l14 -24" />
+      <g transform="translate(0 95)" fill="#fffdf6" opacity="0.92">
+        <g class="cloud cloud--one">
+          <ellipse cx="0" cy="25" rx="69" ry="20" />
+          <circle cx="-31" cy="13" r="27" />
+          <circle cx="10" cy="3" r="36" />
+          <circle cx="48" cy="18" r="23" />
+        </g>
       </g>
-
-      <!-- road -->
-      <path d="M0 548 H1200 V720 H0 Z" fill="url(#road)" />
-      <path d="M0 548 H1200" stroke="#e8cf83" stroke-width="8" opacity=".9" />
-      <path class="road-dashes" d="M-90 642 H1290" fill="none" stroke="#f9e9ad" stroke-width="11" stroke-linecap="round" stroke-dasharray="112 78" />
-      <path d="M0 704 H1200" stroke="#182e43" stroke-width="10" opacity=".45" />
-
-      <!-- bicycle shadow -->
-      <ellipse cx="602" cy="668" rx="302" ry="22" fill="#132f43" opacity=".25" />
-
-      <!-- bicycle -->
-      <g id="bicycle" filter="url(#small-shadow)">
-        <!-- wheels -->
-        <g class="wheel-spokes">
-          <circle cx="420" cy="555" r="105" fill="#182e43" opacity=".1" />
-          <circle cx="420" cy="555" r="99" fill="#f9f8eb" stroke="#193650" stroke-width="9" />
-          <circle cx="420" cy="555" r="83" fill="none" stroke="#8ba8b0" stroke-width="3" />
-          <g stroke="#668792" stroke-width="2" opacity=".75">
-            <path d="M420 456 V654 M321 555 H519 M350 485 L490 625 M350 625 L490 485 M377 464 L463 646 M377 646 L463 464 M329 520 L511 590 M329 590 L511 520" />
+      <g transform="translate(0 173)" fill="#fffdf6" opacity="0.72">
+        <g class="cloud cloud--two">
+          <g transform="scale(.72)">
+            <ellipse cx="0" cy="25" rx="69" ry="20" />
+            <circle cx="-31" cy="13" r="27" />
+            <circle cx="10" cy="3" r="36" />
+            <circle cx="48" cy="18" r="23" />
           </g>
-          <circle cx="420" cy="555" r="11" fill="#edba62" stroke="#17354d" stroke-width="4" />
-          <animateTransform attributeName="transform" type="rotate" from="0 420 555" to="360 420 555" dur="1.35s" repeatCount="indefinite" />
         </g>
-        <g class="wheel-spokes">
-          <circle cx="810" cy="555" r="105" fill="#182e43" opacity=".1" />
-          <circle cx="810" cy="555" r="99" fill="#f9f8eb" stroke="#193650" stroke-width="9" />
-          <circle cx="810" cy="555" r="83" fill="none" stroke="#8ba8b0" stroke-width="3" />
-          <g stroke="#668792" stroke-width="2" opacity=".75">
-            <path d="M810 456 V654 M711 555 H909 M740 485 L880 625 M740 625 L880 485 M767 464 L853 646 M767 646 L853 464 M719 520 L901 590 M719 590 L901 520" />
+      </g>
+      <g transform="translate(0 54)" fill="#fffdf6" opacity="0.58">
+        <g class="cloud cloud--three">
+          <g transform="scale(.52)">
+            <ellipse cx="0" cy="25" rx="69" ry="20" />
+            <circle cx="-31" cy="13" r="27" />
+            <circle cx="10" cy="3" r="36" />
+            <circle cx="48" cy="18" r="23" />
           </g>
-          <circle cx="810" cy="555" r="11" fill="#edba62" stroke="#17354d" stroke-width="4" />
-          <animateTransform attributeName="transform" type="rotate" from="0 810 555" to="360 810 555" dur="1.35s" repeatCount="indefinite" />
-        </g>
-
-        <!-- frame -->
-        <g fill="none" stroke="#e35f63" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M420 555 L535 430 L610 555 Z" stroke-width="12" />
-          <path d="M535 430 L810 555 L610 555 L420 555" stroke-width="10" />
-          <path d="M535 430 L515 390" stroke="#193650" stroke-width="9" />
-          <path d="M515 389 H568" stroke="#193650" stroke-width="11" />
-          <path d="M810 555 L758 405" stroke="#193650" stroke-width="10" />
-          <path d="M758 405 L744 373" stroke="#193650" stroke-width="9" />
-          <path d="M742 373 C730 355 747 345 768 350 L800 360" stroke="#193650" stroke-width="9" />
-          <path d="M788 361 L805 340" stroke="#193650" stroke-width="9" />
-        </g>
-        <path d="M502 388 Q536 375 574 388" fill="none" stroke="#f5df96" stroke-width="13" stroke-linecap="round" />
-        <path d="M420 555 Q516 510 610 555 M610 555 Q708 512 810 555" fill="none" stroke="#f8c56d" stroke-width="5" opacity=".65" />
-
-        <!-- pedals -->
-        <g class="pedal-crank">
-          <circle cx="610" cy="555" r="22" fill="#f8d078" stroke="#193650" stroke-width="6" />
-          <path d="M610 555 L641 527 M610 555 L582 581" stroke="#193650" stroke-width="7" stroke-linecap="round" />
-          <path d="M638 525 h24 M580 583 h-24" stroke="#193650" stroke-width="7" stroke-linecap="round" />
-          <circle cx="610" cy="555" r="8" fill="#e35f63" />
-          <animateTransform attributeName="transform" type="rotate" from="0 610 555" to="360 610 555" dur=".92s" repeatCount="indefinite" />
-        </g>
-
-        <!-- front lamp -->
-        <g>
-          <path d="M751 395 l18 -12" stroke="#193650" stroke-width="6" stroke-linecap="round" />
-          <circle cx="775" cy="382" r="14" fill="#fff1a5" stroke="#193650" stroke-width="5" />
-          <circle cx="775" cy="382" r="5" fill="#fffbe2" />
         </g>
       </g>
 
-      <!-- pelican rider -->
-      <g class="rider">
-        <!-- tail behind the body -->
-        <path d="M530 386 C490 392 457 417 431 448 C473 442 515 435 553 418 Z" fill="#b3cbd0" stroke="#17354d" stroke-width="6" stroke-linejoin="round" />
-        <path d="M523 399 C486 413 463 431 446 448" fill="none" stroke="#eef6ef" stroke-width="8" stroke-linecap="round" />
-        <path d="M520 402 C493 425 481 439 471 456" fill="none" stroke="#eef6ef" stroke-width="7" stroke-linecap="round" />
+      <!-- Far coastline and sea -->
+      <path d="M0 319 C104 278 178 295 267 306 C370 319 437 274 555 290 C686 309 748 267 866 289 C1008 315 1095 270 1200 285 L1200 371 L0 371 Z" fill="#6b9b83" />
+      <path d="M0 338 C121 307 225 338 338 329 C475 318 555 344 673 325 C822 301 951 345 1200 314 L1200 381 L0 381 Z" fill="#8cb49a" />
+      <rect y="341" width="1200" height="144" fill="#4aa7ad" />
+      <path d="M0 365 C215 338 384 378 579 352 C781 326 1000 370 1200 340 L1200 390 C944 406 753 370 561 394 C360 418 185 382 0 411 Z" fill="#6fc1c0" opacity="0.72" />
 
-        <!-- long neck -->
-        <path d="M553 366 C530 329 536 285 565 247 C588 217 602 191 602 164 C602 143 585 128 568 134 C543 143 535 171 544 199 C557 237 542 259 518 291 C491 327 492 376 517 411 Z" fill="url(#feather)" stroke="#17354d" stroke-width="7" stroke-linejoin="round" />
-        <path d="M553 285 C538 319 539 350 553 375" fill="none" stroke="#9ab5bd" stroke-width="9" opacity=".72" stroke-linecap="round" />
-
-        <!-- body -->
-        <path d="M507 347 C520 309 567 291 619 305 C671 319 708 360 697 408 C688 449 651 473 600 472 C552 471 509 449 498 407 C493 388 498 365 507 347 Z" fill="url(#feather)" stroke="#17354d" stroke-width="7" />
-        <path d="M529 333 C556 312 592 311 623 321" fill="none" stroke="#ffffff" stroke-width="9" opacity=".66" stroke-linecap="round" />
-        <path class="feather-shimmer" d="M515 382 C550 362 593 365 630 382" fill="none" stroke="#ffffff" stroke-width="6" opacity=".4" stroke-linecap="round" />
-
-        <!-- far wing -->
-        <path d="M610 342 C642 335 681 351 703 383 C685 383 671 392 657 410 C644 386 626 370 602 363 Z" fill="#b6cbd1" stroke="#17354d" stroke-width="6" />
-
-        <!-- scarf -->
-        <path d="M538 274 C566 288 597 293 625 281 L636 304 C600 321 560 312 532 296 Z" fill="url(#scarf)" stroke="#17354d" stroke-width="5" />
-        <path d="M610 297 C634 310 656 330 663 356 L641 369 C634 342 620 324 599 312 Z" fill="#d94e59" stroke="#17354d" stroke-width="5" stroke-linejoin="round" />
-        <path d="M642 352 l18 23 l-28 -8 Z" fill="#f47a67" stroke="#17354d" stroke-width="4" />
-
-        <!-- near wing -->
-        <g class="wing">
-          <path d="M553 340 C580 339 612 354 628 379 C642 401 637 432 617 448 C594 434 570 414 550 389 C535 369 535 349 553 340 Z" fill="#d6e5e6" stroke="#17354d" stroke-width="7" />
-          <path d="M558 355 C579 374 597 395 612 424 M548 368 C570 388 587 408 599 433 M551 390 C568 405 579 421 586 438" fill="none" stroke="#8eaab4" stroke-width="5" stroke-linecap="round" />
-          <path d="M553 341 C567 338 581 341 594 347" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity=".72" />
+      <g clip-path="url(#sea-clip)" fill="none" stroke="#dff5ef" stroke-width="5" stroke-linecap="round" opacity="0.85">
+        <g class="wave-runner">
+          <path d="M-40 382 Q5 366 50 382 T140 382 T230 382 T320 382 T410 382 T500 382 T590 382 T680 382 T770 382 T860 382 T950 382 T1040 382 T1130 382 T1220 382 T1310 382" />
+          <path d="M-110 424 Q-65 408 -20 424 T70 424 T160 424 T250 424 T340 424 T430 424 T520 424 T610 424 T700 424 T790 424 T880 424 T970 424 T1060 424 T1150 424 T1240 424 T1330 424" />
         </g>
+      </g>
 
-        <!-- head -->
-        <path d="M574 171 C579 133 610 108 653 111 C690 113 718 139 719 172 C720 203 696 229 658 233 C618 237 579 216 574 171 Z" fill="url(#feather)" stroke="#17354d" stroke-width="7" />
-        <path d="M587 139 C601 119 627 112 650 114" fill="none" stroke="#ffffff" stroke-width="9" opacity=".72" stroke-linecap="round" />
-        <path d="M612 112 C598 91 604 76 620 91 C627 67 640 76 642 94 C657 76 665 91 656 113" fill="#a8c4ca" stroke="#17354d" stroke-width="6" stroke-linejoin="round" />
+      <g class="shore-glint" fill="#fffdf6" opacity="0.65">
+        <rect x="91" y="397" width="76" height="5" rx="2.5" />
+        <rect x="203" y="447" width="118" height="5" rx="2.5" />
+        <rect x="816" y="391" width="83" height="5" rx="2.5" />
+        <rect x="1004" y="432" width="128" height="5" rx="2.5" />
+      </g>
 
-        <!-- beak and pouch -->
-        <path d="M687 170 C741 166 803 177 867 207 C835 220 820 246 804 270 C790 291 758 303 727 294 C695 285 674 257 671 225 Z" fill="url(#beak)" stroke="#17354d" stroke-width="7" stroke-linejoin="round" />
-        <path d="M684 219 C733 224 780 221 828 207" fill="none" stroke="#9c5255" stroke-width="5" stroke-linecap="round" opacity=".8" />
-        <path d="M730 231 C751 244 780 251 805 247 C794 273 769 286 745 282 C728 273 716 253 730 231 Z" fill="#ed8b70" opacity=".78" />
-        <path d="M855 205 l25 5 l-23 16" fill="#ffd578" stroke="#17354d" stroke-width="5" stroke-linejoin="round" />
-        <ellipse cx="722" cy="194" rx="7" ry="5" fill="#a04c50" />
-
-        <!-- eye -->
-        <circle cx="668" cy="157" r="15" fill="#ffffff" stroke="#17354d" stroke-width="5" />
-        <circle cx="671" cy="158" r="7" fill="#17354d" />
-        <circle cx="674" cy="155" r="2.5" fill="#ffffff" />
-        <path d="M649 137 Q667 127 682 138" fill="none" stroke="#7c9fa8" stroke-width="7" stroke-linecap="round" />
-
-        <!-- legs and feet on pedals -->
-        <g class="leg-back" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M626 438 C645 462 651 482 641 514" stroke="#f3b75d" stroke-width="12" />
-          <path d="M641 514 l22 13" stroke="#ed9e4d" stroke-width="9" />
-          <path d="M659 527 l27 -2" stroke="#17354d" stroke-width="8" />
-          <path d="M647 514 l-12 10" stroke="#d78746" stroke-width="5" />
+      <g transform="translate(0 282)">
+        <g class="far-sail">
+          <path d="M42 77 L81 77 L54 30 Z" fill="#fffdf6" />
+          <path d="M56 34 L57 79" stroke="#294d55" stroke-width="4" />
+          <path d="M30 78 Q61 94 93 78 Z" fill="#e85f46" />
         </g>
-        <g class="leg-front" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M579 438 C566 459 568 485 591 507" stroke="#f8c567" stroke-width="12" />
-          <path d="M591 507 l19 22" stroke="#e9a34d" stroke-width="9" />
-          <path d="M608 529 l-17 17" stroke="#17354d" stroke-width="8" />
-          <path d="M596 515 l13 -8" stroke="#d78746" stroke-width="5" />
+      </g>
+
+      <g transform="translate(104 267)">
+        <rect x="0" y="44" width="29" height="65" fill="#fff4db" />
+        <rect x="-7" y="39" width="43" height="12" rx="3" fill="#e85f46" />
+        <path d="M3 39 L14 -2 L25 39 Z" fill="#fffdf6" stroke="#294d55" stroke-width="4" stroke-linejoin="round" />
+        <rect x="9" y="66" width="11" height="20" rx="5" fill="#4aa7ad" />
+      </g>
+
+      <!-- Boardwalk and cycle lane -->
+      <path d="M0 458 C209 443 372 468 585 451 C797 434 1018 465 1200 445 L1200 510 L0 510 Z" fill="#f4d98c" />
+      <path d="M0 480 C203 465 394 491 604 472 C811 453 1025 482 1200 467 L1200 506 L0 506 Z" fill="#ffe7a5" />
+      <rect y="497" width="1200" height="203" fill="#f7f1e5" />
+      <rect y="507" width="1200" height="9" fill="#d6cbc0" />
+      <rect y="632" width="1200" height="68" fill="#ded6c8" />
+      <rect y="632" width="1200" height="7" fill="#c9bcae" />
+
+      <g clip-path="url(#road-clip)">
+        <g class="road-dashes" fill="#efc75c">
+          <rect x="-180" y="610" width="118" height="9" rx="4.5" />
+          <rect x="60" y="610" width="118" height="9" rx="4.5" />
+          <rect x="300" y="610" width="118" height="9" rx="4.5" />
+          <rect x="540" y="610" width="118" height="9" rx="4.5" />
+          <rect x="780" y="610" width="118" height="9" rx="4.5" />
+          <rect x="1020" y="610" width="118" height="9" rx="4.5" />
+          <rect x="1260" y="610" width="118" height="9" rx="4.5" />
         </g>
-
-        <!-- tiny rear reflector -->
-        <circle cx="423" cy="510" r="8" fill="#ffdf84" stroke="#17354d" stroke-width="4" />
       </g>
 
-      <!-- foreground flowers -->
-      <g stroke="#264f58" stroke-width="5" stroke-linecap="round" opacity=".85">
-        <path d="M47 615 C42 584 53 566 69 551 M68 600 C74 579 85 572 95 560" />
-        <path d="M1120 610 C1114 580 1125 561 1142 544 M1140 592 C1150 575 1163 569 1173 560" />
-      </g>
-      <g fill="#f4a26b" stroke="#264f58" stroke-width="4">
-        <circle cx="68" cy="548" r="12" /><circle cx="95" cy="557" r="10" />
-        <circle cx="1142" cy="542" r="12" /><circle cx="1173" cy="557" r="10" />
-      </g>
-      <g fill="#ffe49a" opacity=".96">
-        <circle cx="68" cy="548" r="4" /><circle cx="95" cy="557" r="3" />
-        <circle cx="1142" cy="542" r="4" /><circle cx="1173" cy="557" r="3" />
+      <g fill="none" stroke="#a89c8d" stroke-width="5" stroke-linecap="round" opacity="0.48">
+        <path class="speed-line speed-line--one" d="M975 552 H1110" />
+        <path class="speed-line speed-line--two" d="M1080 579 H1190" />
+        <path class="speed-line speed-line--three" d="M920 594 H1000" />
       </g>
 
-      <!-- subtle caption plate -->
-      <g transform="translate(50 52)">
-        <rect width="263" height="62" rx="31" fill="#fff9e8" opacity=".78" />
-        <circle cx="34" cy="31" r="13" fill="#df6165" />
-        <path d="M28 31 h12 M34 25 v12" stroke="#fff9e8" stroke-width="3" stroke-linecap="round" />
-        <text x="62" y="38" fill="#25485d" font-size="20" font-weight="700" letter-spacing="1">海风骑行中</text>
+      <!-- Pelican and bicycle -->
+      <g class="ride-scale">
+        <g class="ride-unit">
+          <ellipse class="bike-shadow" cx="573" cy="603" rx="242" ry="20" fill="#203a40" filter="url(#soft-shadow)" opacity="0.15" />
+
+          <!-- Back wheel -->
+          <g transform="translate(407 526)">
+            <circle r="87" fill="#fffdf6" stroke="#203a40" stroke-width="13" />
+            <circle r="73" fill="none" stroke="#dfd7ca" stroke-width="5" />
+            <g class="wheel-spin" stroke="#8da2a1" stroke-width="3" stroke-linecap="round">
+              <path d="M0 -71 V71 M-71 0 H71 M-50 -50 L50 50 M50 -50 L-50 50" />
+              <path d="M-27 -66 L27 66 M27 -66 L-27 66 M-66 -27 L66 27 M-66 27 L66 -27" />
+              <circle r="10" fill="#f4b83f" stroke="#203a40" stroke-width="4" />
+            </g>
+          </g>
+
+          <!-- Front wheel -->
+          <g transform="translate(716 526)">
+            <circle r="87" fill="#fffdf6" stroke="#203a40" stroke-width="13" />
+            <circle r="73" fill="none" stroke="#dfd7ca" stroke-width="5" />
+            <g class="wheel-spin" stroke="#8da2a1" stroke-width="3" stroke-linecap="round">
+              <path d="M0 -71 V71 M-71 0 H71 M-50 -50 L50 50 M50 -50 L-50 50" />
+              <path d="M-27 -66 L27 66 M27 -66 L-27 66 M-66 -27 L66 27 M-66 27 L66 -27" />
+              <circle r="10" fill="#f4b83f" stroke="#203a40" stroke-width="4" />
+            </g>
+          </g>
+
+          <!-- Bicycle frame -->
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M407 526 L511 422 L566 526 Z M511 422 L649 447 L566 526 M407 526 L566 526" stroke="#e85f46" stroke-width="14" />
+            <path d="M649 447 L716 526 M649 447 L678 385" stroke="#e85f46" stroke-width="13" />
+            <path d="M666 384 Q696 370 711 390" stroke="#203a40" stroke-width="9" />
+            <path d="M496 417 H540" stroke="#203a40" stroke-width="12" />
+          </g>
+
+          <g transform="translate(566 526)">
+            <g class="crank-spin">
+              <circle r="25" fill="#f4b83f" stroke="#203a40" stroke-width="7" />
+              <path d="M0 -1 L45 -12 M0 1 L-45 12" fill="none" stroke="#203a40" stroke-width="7" stroke-linecap="round" />
+              <path d="M36 -13 H57 M-57 13 H-36" fill="none" stroke="#203a40" stroke-width="8" stroke-linecap="round" />
+            </g>
+          </g>
+
+          <!-- Rear rack and picnic roll -->
+          <path d="M353 454 H431 L407 514 M365 454 L341 516" fill="none" stroke="#203a40" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+          <g transform="translate(336 421) rotate(-3)">
+            <rect width="91" height="43" rx="8" fill="#f4b83f" stroke="#203a40" stroke-width="6" />
+            <path d="M25 3 V40 M61 3 V40" stroke="#fff4db" stroke-width="7" />
+          </g>
+
+          <!-- Basket -->
+          <g transform="translate(678 391)">
+            <path d="M0 17 H95 L83 75 H12 Z" fill="#bd7b4b" stroke="#203a40" stroke-width="6" stroke-linejoin="round" />
+            <path d="M12 34 H89 M9 51 H86 M31 20 L28 71 M58 20 L59 70" fill="none" stroke="#e6b271" stroke-width="5" />
+            <path d="M17 17 Q46 -18 78 17" fill="none" stroke="#203a40" stroke-width="6" />
+            <g class="basket-flower">
+              <path d="M43 19 Q36 -6 43 -28 M61 19 Q72 -8 66 -29" fill="none" stroke="#4f8a62" stroke-width="5" stroke-linecap="round" />
+              <circle cx="42" cy="-31" r="11" fill="#e85f46" />
+              <circle cx="69" cy="-31" r="11" fill="#fff4db" />
+              <circle cx="55" cy="-42" r="10" fill="#f4b83f" />
+            </g>
+          </g>
+
+          <!-- Pelican tail behind the body -->
+          <g fill="#eef1e8" stroke="#203a40" stroke-width="6" stroke-linejoin="round">
+            <path class="feather-tip" d="M453 344 L384 319 L422 369 Z" />
+            <path class="feather-tip feather-tip--two" d="M455 362 L375 357 L433 391 Z" />
+          </g>
+
+          <!-- Far leg -->
+          <g class="leg--far">
+            <path d="M520 391 Q522 445 498 482 Q482 506 511 537" fill="none" stroke="#d99535" stroke-width="17" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M501 539 Q524 545 542 536" fill="none" stroke="#203a40" stroke-width="9" stroke-linecap="round" />
+          </g>
+
+          <!-- Body and neck outline -->
+          <path d="M547 342 C574 310 573 267 578 234 C583 199 601 179 627 172" fill="none" stroke="#203a40" stroke-width="70" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M547 342 C574 310 573 267 578 234 C583 199 601 179 627 172" fill="none" stroke="#f7f5ec" stroke-width="59" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M581 248 C594 255 610 257 625 252" fill="none" stroke="#e0dfd7" stroke-width="7" stroke-linecap="round" />
+
+          <path d="M562 338 C557 298 520 274 477 282 C432 290 415 328 433 369 C451 411 499 423 541 402 C565 390 574 365 562 338 Z" fill="#f7f5ec" stroke="#203a40" stroke-width="7" stroke-linejoin="round" />
+
+          <!-- Body feathers -->
+          <path d="M469 310 C439 326 441 374 477 390 C512 406 549 385 549 349 C549 318 516 293 469 310 Z" fill="#93a9a7" stroke="#203a40" stroke-width="6" />
+          <path d="M465 323 Q504 342 535 319 M459 347 Q500 365 540 343 M468 373 Q500 383 529 367" fill="none" stroke="#cbd6d2" stroke-width="6" stroke-linecap="round" />
+
+          <!-- Near leg -->
+          <g class="leg--near">
+            <path d="M547 392 Q562 439 583 468 Q602 494 586 538" fill="none" stroke="#f4b83f" stroke-width="19" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M576 539 Q600 547 622 535" fill="none" stroke="#203a40" stroke-width="10" stroke-linecap="round" />
+          </g>
+
+          <!-- Neck scarf -->
+          <path d="M567 261 Q591 278 620 263" fill="none" stroke="#e85f46" stroke-width="15" stroke-linecap="round" />
+          <path class="scarf-tail" d="M585 267 Q546 292 529 327 Q566 311 599 281 Z" fill="#e85f46" stroke="#203a40" stroke-width="5" stroke-linejoin="round" />
+
+          <!-- Head and beak -->
+          <g class="pelican-head">
+            <ellipse cx="633" cy="167" rx="51" ry="43" fill="#f7f5ec" stroke="#203a40" stroke-width="7" />
+            <path d="M659 153 C703 148 766 156 821 174 C779 185 713 190 657 181 Z" fill="#f4b83f" stroke="#203a40" stroke-width="7" stroke-linejoin="round" />
+            <path d="M660 180 C704 187 771 185 821 174 C798 204 728 220 659 193 Z" fill="#e99b38" stroke="#203a40" stroke-width="7" stroke-linejoin="round" />
+            <path d="M682 191 Q728 212 782 188 Q768 232 706 225 Q673 218 682 191 Z" fill="#f3c46a" stroke="#203a40" stroke-width="6" stroke-linejoin="round" />
+            <ellipse class="eye-lid" cx="647" cy="157" rx="10" ry="12" fill="#203a40" />
+            <circle cx="650" cy="153" r="3.5" fill="#fffdf6" />
+            <path d="M608 134 Q635 113 662 134" fill="none" stroke="#203a40" stroke-width="7" stroke-linecap="round" />
+          </g>
+
+          <!-- Wing reaches the handlebar -->
+          <g class="front-wing">
+            <path d="M527 305 C565 299 599 326 620 356 C636 379 651 396 674 394 C686 393 692 409 682 417 C652 437 616 401 590 380 C563 359 536 350 516 341 Z" fill="#d8ddd6" stroke="#203a40" stroke-width="7" stroke-linejoin="round" />
+            <path d="M543 323 Q579 337 606 371 M535 339 Q568 350 589 374" fill="none" stroke="#aab7b2" stroke-width="6" stroke-linecap="round" />
+            <path d="M674 395 Q694 392 699 407" fill="none" stroke="#f4b83f" stroke-width="10" stroke-linecap="round" />
+          </g>
+
+          <!-- Motion accents -->
+          <g fill="none" stroke="#fffdf6" stroke-width="7" stroke-linecap="round" opacity="0.8">
+            <path d="M329 394 H277" />
+            <path d="M346 423 H298" />
+            <path d="M320 451 H250" />
+          </g>
+        </g>
+      </g>
+
+      <!-- Foreground plants -->
+      <g transform="translate(88 641)" fill="none" stroke="#4f8a62" stroke-width="7" stroke-linecap="round">
+        <path d="M0 58 Q1 18 20 0 M18 58 Q27 24 54 13 M-5 58 Q-13 31 -31 22" />
+      </g>
+      <g transform="translate(1112 647) scale(.86)" fill="none" stroke="#4f8a62" stroke-width="7" stroke-linecap="round">
+        <path d="M0 58 Q1 18 20 0 M18 58 Q27 24 54 13 M-5 58 Q-13 31 -31 22" />
       </g>
     </svg>
+
+    <button class="playback" id="playback" type="button" aria-label="Pause animation" title="Pause animation">
+      <span aria-hidden="true">&#x23F8;</span>
+    </button>
   </main>
+
+  <script>
+    const stage = document.querySelector('#stage');
+    const playback = document.querySelector('#playback');
+    const icon = playback.querySelector('span');
+
+    playback.addEventListener('click', () => {
+      const isPaused = stage.classList.toggle('paused');
+      icon.textContent = isPaused ? '\u25B6' : '\u23F8';
+      playback.setAttribute('aria-label', isPaused ? 'Play animation' : 'Pause animation');
+      playback.setAttribute('title', isPaused ? 'Play animation' : 'Pause animation');
+    });
+  </script>
 </body>
 </html>
