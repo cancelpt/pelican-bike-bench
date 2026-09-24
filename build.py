@@ -27,12 +27,14 @@ DISPLAY = {
     "deepseek-v4flash": "deepseek-v4-flash",
     "deepseek-v4.1flash": "deepseek-v4.1-flash",
     "deepseek-v4pro": "deepseek-v4-pro",
+    "claude-opus-5-5": "claude-opus-5.5",
 }
 RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日（国产=北京，美厂=其本地标注日）；与 OR 上架日不一致时以官方为准
     "claude-fable-5": "2026-06-09",
     "claude-fable-5.1": "2026-09-01",
     "claude-opus-4.6": "2026-02-05",
     "claude-opus-5": "2026-07-24",
+    "claude-opus-5-5": "2026-09-22",
     "claude-sonnet-4.6": "2026-02-17",
     "claude-sonnet-5": "2026-06-30",
     "deepseek-v4.1flash": "2026-09-10",
@@ -47,6 +49,8 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "gpt-5.6-sol": "2026-07-09",
     "gpt-5.6-terra": "2026-07-09",
     "gpt-6-astra": "2026-09-03",
+    "gpt-6-luna": "2026-09-22",
+    "gpt-6-sol": "2026-09-22",
     "grok-4.6": "2026-08-12",
     "grok-4.7": "2026-09-21",
     "hy3": "2026-07-06",
@@ -66,9 +70,11 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "mimo-v2.6-flash": "2026-09-22",
     "mimo-v2.6-pro": "2026-09-22",
 }
-G56_ORDER = {"gpt-5.6-sol": 0, "gpt-5.6-terra": 1, "gpt-5.6-luna": 2}
+G56_ORDER = {"gpt-6-sol": 0, "gpt-6-luna": 1, "gpt-5.6-sol": 2, "gpt-5.6-terra": 3, "gpt-5.6-luna": 4}
 THINK_DEFAULT = {
     "gpt-6-astra": "max",
+    "gpt-6-sol": "max",
+    "gpt-6-luna": "max",
     "gpt-5.6-luna": "max",
     "gpt-5.6-sol": "max",
     "gpt-5.6-terra": "max",
@@ -146,11 +152,24 @@ def tokens(channel: str):
 
 
 def classify(channel: str):
+    extra_oa = ""
+    oa = False
     for k, nick in OPENAI_PROVIDERS.items():
         if channel == k or channel.startswith(k + "-"):
-            return dict(relay="OpenAI", agent="", channel="", think="", extra=f"由{nick}提供", base=True)
-    if channel.lower().startswith("openai"):
-        return dict(relay=channel, agent="", channel="", think="", extra="", base=True)
+            oa, extra_oa = True, f"由{nick}提供"
+            break
+    if oa or channel.lower().startswith("openai"):
+        think = ""
+        extras = [extra_oa] if extra_oa else []
+        for tok in tokens(channel):
+            k = tok.lower()
+            if k.startswith("openai") or k == "约":
+                continue
+            if tok.endswith("思考") and (tok[:-2] in THINKING or tok[:-2].lower() in THINKING):
+                think = THINKING.get(tok[:-2], THINKING[tok[:-2].lower()])
+            elif tok in THINKING or k in THINKING:
+                think = THINKING.get(tok, THINKING[k])
+        return dict(relay="OpenAI", agent="", channel="", think=think, extra=" ".join(extras), base=True)
     agent = ch = think = ""
     extras, raw_relay = [], []
     for tok in tokens(channel):
@@ -179,7 +198,7 @@ def classify(channel: str):
             extras.append(f"#{tok}")
         elif tok.lower() == "cheat":
             extras.append("cheat")
-        elif k == "grok-heavy":
+        elif k in ("grok-heavy", "约"):
             continue
         elif tok in TIER or k in TIER:
             raw_relay.append(tok)
@@ -321,7 +340,7 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 36 and len(items) == 68 and not leftover, (n_models, len(items), leftover[:5])
+    assert n_models == 39 and len(items) == 73 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 20 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
@@ -346,7 +365,11 @@ def build():
     assert not any("Total cost:" in (it["blurb"] or "") or (it["blurb"] or "") == "仍然调用了无头浏览器做视觉检查" for it in items)
     assert all(it.get("think") for it in items)
     assert any(it["model"] == "gemini-3.8-flash" and it["think"] == "medium" for it in items)
-    assert any(it["model"] == "gpt-6-astra" and it["think"] == "max" for it in items)
+    assert any(it["model"] == "gpt-6-sol" and it["agent"] == "Codex" and it["relay"] == "OpenAI" and it["think"] == "max" and it["secs"] == 317 and it["released"] == "2026-09-22" for it in items)
+    assert any(it["model"] == "gpt-6-luna" and it["agent"] == "Codex" and it["relay"] == "OpenAI" and it["think"] == "max" and it["secs"] == 256 and it["released"] == "2026-09-22" for it in items)
+    opus55 = [it for it in items if it["model"] == "claude-opus-5.5"]
+    assert len(opus55) == 3 and all(it["agent"] == "Claude Code" and it["think"] == "xhigh" and it["relay"] for it in opus55)
+    assert not any(s in "".join(it["relay"] for it in opus55) for s in ("Lietio", "walkcoding", "aicodemirror", "AiCodeMirror"))
     assert any(it["model"] == "longcat-2.0" and it["think"] == "开启" for it in items)
     assert any(it["channel"] == "cursor" and it["relay"] for it in items)
     return len(items), n_models, n_fam
