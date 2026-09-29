@@ -54,6 +54,7 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "gpt-6-astra": "2026-09-03",
     "gpt-6-luna": "2026-09-22",
     "gpt-6-sol": "2026-09-22",
+    "gpt-6.1-sol": "2026-09-29",
     "grok-4.6": "2026-08-12",
     "grok-4.7": "2026-09-21",
     "hy3": "2026-07-06",
@@ -74,11 +75,12 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "mimo-v2.6-flash": "2026-09-22",
     "mimo-v2.6-pro": "2026-09-22",
 }
-G56_ORDER = {"gpt-6-sol": 0, "gpt-6-luna": 1, "gpt-5.6-sol": 2, "gpt-5.6-terra": 3, "gpt-5.6-luna": 4}
+G56_ORDER = {"gpt-6.1-sol": 0, "gpt-6-sol": 1, "gpt-6-luna": 2, "gpt-5.6-sol": 3, "gpt-5.6-terra": 4, "gpt-5.6-luna": 5}
 THINK_DEFAULT = {
     "gpt-6-astra": "max",
     "gpt-6-sol": "max",
     "gpt-6-luna": "max",
+    "gpt-6.1-sol": "max",
     "gpt-5.6-luna": "max",
     "gpt-5.6-sol": "max",
     "gpt-5.6-terra": "max",
@@ -160,7 +162,7 @@ def classify(channel: str):
     extra_oa = ""
     oa = False
     for k, nick in OPENAI_PROVIDERS.items():
-        if channel == k or channel.startswith(k + "-"):
+        if channel == k or channel.startswith(k):
             oa, extra_oa = True, f"由{nick}提供"
             break
     if oa or channel.lower().startswith("openai"):
@@ -345,7 +347,7 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 41 and len(items) == 75 and not leftover, (n_models, len(items), leftover[:5])
+    assert n_models == 42 and len(items) == 76 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 20 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
@@ -372,6 +374,7 @@ def build():
     assert any(it["model"] == "gemini-3.8-flash" and it["think"] == "medium" for it in items)
     assert any(it["model"] == "gpt-6-sol" and it["agent"] == "Codex" and it["relay"] == "OpenAI" and it["think"] == "max" and it["secs"] == 317 and it["released"] == "2026-09-22" for it in items)
     assert any(it["model"] == "gpt-6-luna" and it["agent"] == "Codex" and it["relay"] == "OpenAI" and it["think"] == "max" and it["secs"] == 256 and it["released"] == "2026-09-22" for it in items)
+    assert any(it["model"] == "gpt-6.1-sol" and it["agent"] == "Codex" and it["relay"] == "OpenAI" and it["think"] == "max" and it["secs"] == 488 and it["released"] == "2026-09-29" and it["extra"] == "由I*9提供" for it in items)
     opus55 = [it for it in items if it["model"] == "claude-opus-5.5"]
     assert len(opus55) == 3 and all(it["agent"] == "Claude Code" and it["think"] == "xhigh" and it["relay"] for it in opus55)
     assert not any(s in "".join(it["relay"] for it in opus55) for s in ("Lietio", "walkcoding", "aicodemirror", "AiCodeMirror"))
