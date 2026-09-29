@@ -11,6 +11,7 @@ DATE_RE = re.compile(r"^\d{4}$")
 MS = re.compile(r"(\d+)\s*分\s*(\d+)\s*秒")
 MEN = re.compile(r"(\d+)\s*m\s*(\d+)\s*s", re.I)
 HOUR = re.compile(r"约?\s*(\d+)\s*小时")
+HMS = re.compile(r"(\d+)\s*h\s*(\d+)\s*m\s*(\d+)\s*s", re.I)
 MINU = re.compile(r"(\d+)\s*min\b", re.I)
 SEC = re.compile(r"(\d+(?:\.\d+)?)\s*s\b", re.I)
 OPENAI_PROVIDERS = {"OpenAI-2": "I*9", "OpenAI-IE9": "I*9"}
@@ -28,6 +29,7 @@ DISPLAY = {
     "deepseek-v4.1flash": "deepseek-v4.1-flash",
     "deepseek-v4pro": "deepseek-v4-pro",
     "claude-opus-5-5": "claude-opus-5.5",
+    "claude-sonnet-5-5": "claude-sonnet-5.5",
 }
 RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日（国产=北京，美厂=其本地标注日）；与 OR 上架日不一致时以官方为准
     "claude-fable-5": "2026-06-09",
@@ -37,6 +39,7 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "claude-opus-5-5": "2026-09-22",
     "claude-sonnet-4.6": "2026-02-17",
     "claude-sonnet-5": "2026-06-30",
+    "claude-sonnet-5-5": "2026-09-28",
     "deepseek-v4.1flash": "2026-09-10",
     "deepseek-v4flash": "2026-07-31",
     "deepseek-v4pro": "2026-08-13",
@@ -94,6 +97,7 @@ def parse_run(name):
     name = name.strip()
     for rx, conv in (
         (MS, lambda m: int(m.group(1)) * 60 + int(m.group(2))),
+        (HMS, lambda m: int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))),
         (MEN, lambda m: int(m.group(1)) * 60 + int(m.group(2))),
         (HOUR, lambda m: int(m.group(1)) * 3600),
         (MINU, lambda m: int(m.group(1)) * 60),
@@ -251,6 +255,8 @@ def build():
     DIST.mkdir(parents=True)
     items, mapping = [], {}
     for model in sorted([p for p in ROOT.iterdir() if p.is_dir()], key=lambda p: p.name.lower()):
+        if model.name == "longcat-2.5-preview":
+            continue
         for dirpath, _, filenames in os.walk(model):
             htmls = [f for f in filenames if f.lower().endswith(".html")]
             if not htmls:
@@ -340,7 +346,7 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 39 and len(items) == 73 and not leftover, (n_models, len(items), leftover[:5])
+    assert n_models == 40 and len(items) == 74 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 20 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
@@ -370,6 +376,11 @@ def build():
     opus55 = [it for it in items if it["model"] == "claude-opus-5.5"]
     assert len(opus55) == 3 and all(it["agent"] == "Claude Code" and it["think"] == "xhigh" and it["relay"] for it in opus55)
     assert not any(s in "".join(it["relay"] for it in opus55) for s in ("Lietio", "walkcoding", "aicodemirror", "AiCodeMirror"))
+    sonnet55 = [it for it in items if it["model"] == "claude-sonnet-5.5"]
+    assert len(sonnet55) == 1 and sonnet55[0]["agent"] == "Claude Code" and sonnet55[0]["think"] == "xhigh" and sonnet55[0]["secs"] == 4815 and sonnet55[0]["released"] == "2026-09-28"
+    assert "walkcoding" not in (sonnet55[0]["relay"] or "")
+    claude_models = list(dict.fromkeys(it["model"] for it in items if it["family"] == "claude"))
+    assert claude_models[0] == "claude-sonnet-5.5" and claude_models[1] == "claude-opus-5.5"
     assert any(it["model"] == "longcat-2.0" and it["think"] == "开启" for it in items)
     assert any(it["channel"] == "cursor" and it["relay"] for it in items)
     return len(items), n_models, n_fam
