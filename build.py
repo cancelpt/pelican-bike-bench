@@ -61,6 +61,7 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "kimi-k2.7-code": "2026-06-12",
     "kimi-k3": "2026-07-16",
     "longcat-2.0": "2026-06-30",
+    "longcat-2.5-preview": "2026-09-25",
     "minimax-m3": "2026-06-01",
     "qwen-3.7-plus": "2026-06-02",
     "qwen-3.8-flash": "2026-08-26",
@@ -255,8 +256,6 @@ def build():
     DIST.mkdir(parents=True)
     items, mapping = [], {}
     for model in sorted([p for p in ROOT.iterdir() if p.is_dir()], key=lambda p: p.name.lower()):
-        if model.name == "longcat-2.5-preview":
-            continue
         for dirpath, _, filenames in os.walk(model):
             htmls = [f for f in filenames if f.lower().endswith(".html")]
             if not htmls:
@@ -346,14 +345,14 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 40 and len(items) == 74 and not leftover, (n_models, len(items), leftover[:5])
+    assert n_models == 41 and len(items) == 75 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 20 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
     assert any(it["model"] == "deepseek-v4-pro" and it["released"] == "2026-08-13" for it in items)
     fams = list(dict.fromkeys(it["family"] for it in items))
     assert fams[:7] == FAM_PIN, fams
-    assert fams[7:] == ["mimo", "hy", "qwen", "longcat", "seed", "minimax"], fams
+    assert fams[7:] == ["longcat", "mimo", "hy", "qwen", "seed", "minimax"], fams
     assert any(it["model"] == "mimo-v2.6-pro" and it["agent"] == "Pi" and it["think"] == "xhigh" and it["secs"] == 125 and it["released"] == "2026-09-22" for it in items)
     assert any(it["model"] == "mimo-v2.6-flash" and it["secs"] == 240 and it["agent"] == "Pi" and it["channel"] == "OpenRouter" and not it["relay"] for it in items)
     assert all(it["agent"] == "Codex" for it in items if it["family"] == "gpt")
@@ -382,6 +381,7 @@ def build():
     claude_models = list(dict.fromkeys(it["model"] for it in items if it["family"] == "claude"))
     assert claude_models[0] == "claude-sonnet-5.5" and claude_models[1] == "claude-opus-5.5"
     assert any(it["model"] == "longcat-2.0" and it["think"] == "开启" for it in items)
+    assert any(it["model"] == "longcat-2.5-preview" and it["agent"] == "Pi" and it["think"] == "high" and it["secs"] == 104 and it["released"] == "2026-09-25" for it in items)
     assert any(it["channel"] == "cursor" and it["relay"] for it in items)
     return len(items), n_models, n_fam
 
