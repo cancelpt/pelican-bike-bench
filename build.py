@@ -74,6 +74,10 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "mimo-v2.5-pro": "2026-04-27",
     "mimo-v2.6-flash": "2026-09-22",
     "mimo-v2.6-pro": "2026-09-22",
+    "kimi-k2.8-preview": "2026-09-11",
+    "space-bunny": "2026-09-23",
+    "step-5-preview": "2026-09-20",
+    "muse-wonder": "2026-10-12",
 }
 G56_ORDER = {"gpt-6.1-sol": 0, "gpt-6-sol": 1, "gpt-6-luna": 2, "gpt-5.6-sol": 3, "gpt-5.6-terra": 4, "gpt-5.6-luna": 5}
 THINK_DEFAULT = {
@@ -130,7 +134,7 @@ def run_meta(rel: Path):
 
 def family_of(model: str) -> str:
     m = model.lower()
-    for p in FAM_PIN + ["qwen", "seed", "hy", "longcat", "minimax", "mimo"]:
+    for p in FAM_PIN + ["qwen", "seed", "hy", "longcat", "minimax", "mimo", "muse", "step", "space"]:
         if m.startswith(p):
             return p
     return re.split(r"[-_]", m)[0]
@@ -145,16 +149,25 @@ def mask_relay(tok: str) -> str:
 
 
 def tokens(channel: str):
-    bits = [p for p in re.split(r"[-/]+", channel) if p]
+    bits = [p.strip() for p in re.split(r"[-/]+", channel) if p.strip()]
     out, i = [], 0
     while i < len(bits):
         two = "-".join(bits[i : i + 2]).lower() if i + 1 < len(bits) else ""
         if two in COMPOUND:
             out.append(two)
             i += 2
-        else:
-            out.append(bits[i])
+            continue
+        b, bl = bits[i], bits[i].lower()
+        if bl == "pi agent":
+            out.append("pi agent")
             i += 1
+            continue
+        if bl.startswith("pi agent "):
+            out.append("pi agent")
+            bits[i] = b[len("pi agent") :].strip()
+            continue
+        out.append(b)
+        i += 1
     return out
 
 
@@ -209,6 +222,8 @@ def classify(channel: str):
             continue
         elif tok in TIER or k in TIER:
             raw_relay.append(tok)
+        elif " " in tok:
+            extras.append(tok)
         else:
             raw_relay.append(tok)
     relay = mask_relay("-".join(raw_relay)) if raw_relay else ""
@@ -347,14 +362,14 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 42 and len(items) == 76 and not leftover, (n_models, len(items), leftover[:5])
+    assert n_models == 46 and len(items) == 81 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 20 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
     assert any(it["model"] == "deepseek-v4-pro" and it["released"] == "2026-08-13" for it in items)
     fams = list(dict.fromkeys(it["family"] for it in items))
     assert fams[:7] == FAM_PIN, fams
-    assert fams[7:] == ["longcat", "mimo", "hy", "qwen", "seed", "minimax"], fams
+    assert fams[7:] == ["muse", "longcat", "space", "mimo", "step", "hy", "qwen", "seed", "minimax"], fams
     assert any(it["model"] == "mimo-v2.6-pro" and it["agent"] == "Pi" and it["think"] == "xhigh" and it["secs"] == 125 and it["released"] == "2026-09-22" for it in items)
     assert any(it["model"] == "mimo-v2.6-flash" and it["secs"] == 240 and it["agent"] == "Pi" and it["channel"] == "OpenRouter" and not it["relay"] for it in items)
     assert all(it["agent"] == "Codex" for it in items if it["family"] == "gpt")
@@ -385,6 +400,11 @@ def build():
     assert claude_models[0] == "claude-sonnet-5.5" and claude_models[1] == "claude-opus-5.5"
     assert any(it["model"] == "longcat-2.0" and it["think"] == "开启" for it in items)
     assert any(it["model"] == "longcat-2.5-preview" and it["agent"] == "Pi" and it["think"] == "high" and it["secs"] == 104 and it["released"] == "2026-09-25" for it in items)
+    assert any(it["model"] == "kimi-k2.8-preview" and it["agent"] == "Codebuddy" and it["think"] == "默认" and it["secs"] == 51 and it["released"] == "2026-09-11" for it in items)
+    assert any(it["model"] == "space-bunny" and it["agent"] == "Codebuddy" and it["think"] == "max" and it["secs"] == 203 and it["released"] == "2026-09-23" and not it["relay"] for it in items)
+    assert any(it["model"] == "step-5-preview" and it["agent"] == "Codebuddy" and it["think"] == "high" and it["secs"] == 513 and it["released"] == "2026-09-20" for it in items)
+    assert any(it["model"] == "muse-wonder" and it["agent"] == "Pi" and it["channel"] == "OpenRouter" and it["think"] == "max" and it["secs"] == 47 and it["released"] == "2026-10-12" and not it["relay"] for it in items)
+    assert any(it["model"] == "mimo-v2.6-pro" and it["think"] == "high" and it["secs"] == 688 and "mimo coding plan" in (it.get("extra") or "") and not it["relay"] for it in items)
     assert any(it["channel"] == "cursor" and it["relay"] for it in items)
     return len(items), n_models, n_fam
 
@@ -414,7 +434,7 @@ TEMPLATE = r"""<!doctype html>
       <h1 class="h4 mb-1">鹈鹕骑自行车 · 模型对比</h1>
       <p class="small mb-1 d-flex flex-wrap align-items-center gap-2"><span id="p2t">创建一个HTML，内容是SVG绘制一个鹈鹕骑自行车的2D动画，你不需要任何测试</span><button type="button" class="btn btn-sm btn-outline-secondary" data-copy="p2">复制</button></p>
       <p class="text-secondary small mb-0">发布日为厂商官方口径（博客/新闻稿/文档所述发布日历日；国产为北京日，美厂为官方标注日），与 OpenRouter 上架日不一致时以官方为准。</p>
-      <p class="text-secondary small mb-0">与 OR 差异：qwen-3.8-max 官方 08-03（OR 的 0902 为 9 月快照）；seed-turbo/pro 06-23、seed-code 02-14（OR 8 月才上架）；longcat-2.0 06-30；glm-5.3 08-14；gpt-6-astra 09-03；gpt-5.5 04-23。</p>
+      <p class="text-secondary small mb-0">与 OR 差异：qwen-3.8-max 官方 08-03（OR 的 0902 为 9 月快照）；seed-turbo/pro 06-23、seed-code 02-14（OR 8 月才上架）；longcat-2.0 06-30；glm-5.3 08-14；gpt-6-astra 09-03；gpt-5.5 04-23；step-5-preview 官方 09-20（OR 10-08）。</p>
     </div>
   </div>
   <div class="d-flex flex-wrap gap-2 mb-3" id="f"></div>
@@ -422,8 +442,8 @@ TEMPLATE = r"""<!doctype html>
 </div>
 <script>
 const D=__DATA__, CAP=3;
-const SITE={gpt:"https://openai.com",claude:"https://www.anthropic.com",gemini:"https://gemini.google.com",glm:"https://z.ai/",qwen:"https://qwen.ai",deepseek:"https://www.deepseek.com",kimi:"https://www.moonshot.cn",seed:"https://www.volcengine.com",grok:"https://x.ai/",hy:"https://hunyuan.tencent.com",longcat:"https://longcat.chat",minimax:"https://minimaxi.com/",mimo:"https://www.xiaomi.com"};
-const LAB={gpt:"OpenAI",claude:"Anthropic",gemini:"Google",glm:"Z.ai",qwen:"Qwen",deepseek:"DeepSeek",kimi:"Moonshot",seed:"ByteDance",grok:"xAI",hy:"Tencent",longcat:"LongCat",minimax:"MiniMax",mimo:"Xiaomi"};
+const SITE={gpt:"https://openai.com",claude:"https://www.anthropic.com",gemini:"https://gemini.google.com",glm:"https://z.ai/",qwen:"https://qwen.ai",deepseek:"https://www.deepseek.com",kimi:"https://www.moonshot.cn",seed:"https://www.volcengine.com",grok:"https://x.ai/",hy:"https://hunyuan.tencent.com",longcat:"https://longcat.chat",minimax:"https://minimaxi.com/",mimo:"https://www.xiaomi.com",muse:"https://ai.meta.com",step:"https://www.stepfun.com",space:"https://openrouter.ai/stealth"};
+const LAB={gpt:"OpenAI",claude:"Anthropic",gemini:"Google",glm:"Z.ai",qwen:"Qwen",deepseek:"DeepSeek",kimi:"Moonshot",seed:"ByteDance",grok:"xAI",hy:"Tencent",longcat:"LongCat",minimax:"MiniMax",mimo:"Xiaomi",muse:"Meta",step:"StepFun",space:"Stealth"};
 const ico=u=>`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(u)}&size=256`;
 let fam=D[0].family, model="", open=new Set();
 const fams=[...new Set(D.map(x=>x.family))];
