@@ -44,6 +44,7 @@ RELEASE = {  # 官方口径：厂商博客/newsroom/文档所述发布日历日�
     "deepseek-v4flash": "2026-07-31",
     "deepseek-v4pro": "2026-08-13",
     "gemini-3.8-flash": "2026-09-02",
+    "gemini-4-argon": "2026-09-30",
     "glm-5.2": "2026-06-16",
     "glm-5.3": "2026-08-14",
     "glm-5.3-flash": "2026-08-26",
@@ -362,7 +363,7 @@ def build():
     leftover = [p for p in DIST.rglob("*.html") if p.name != "index.html" and "3d" not in p.parts]
     cnt = Counter(it["model"] for it in items)
     astra = [it for it in items if it["model"] == "gpt-6-astra"]
-    assert n_models == 46 and len(items) == 81 and not leftover, (n_models, len(items), leftover[:5])
+    assert n_models == 47 and len(items) == 82 and not leftover, (n_models, len(items), leftover[:5])
     assert len(astra) == 20 and astra[0]["base"] and astra[1]["base"] and astra[2]["base"]
     assert not any(t in (it["extra"] or "") for it in items for t in ("plus", "pro", "平价"))
     assert any(it["model"] == "deepseek-v4-flash" and it["released"] == "2026-07-31" for it in items)
@@ -374,7 +375,13 @@ def build():
     assert any(it["model"] == "mimo-v2.6-flash" and it["secs"] == 240 and it["agent"] == "Pi" and it["channel"] == "OpenRouter" and not it["relay"] for it in items)
     assert all(it["agent"] == "Codex" for it in items if it["family"] == "gpt")
     assert all(it["agent"] == "Claude Code" for it in items if it["family"] == "claude")
-    assert all(it["agent"] == "Gemini CLI" and not it["channel"] for it in items if it["family"] == "gemini")
+    assert all(
+        (it["agent"] == "Pi" and it["channel"] == "OpenRouter")
+        if it["model"] == "gemini-4-argon"
+        else (it["agent"] == "Gemini CLI" and not it["channel"])
+        for it in items
+        if it["family"] == "gemini"
+    )
     assert all(it["agent"] == "Grok Build" and it["think"] == "xhigh" for it in items if it["model"] == "grok-4.6")
     assert any(it["model"] == "grok-4.7" and it["agent"] == "Pi" and it["channel"] == "OpenRouter" and it["think"] == "xhigh" and it["secs"] == 1320 and it["released"] == "2026-09-21" for it in items)
     assert any(it["family"] == "mimo" and "E••••••e" in (it.get("extra") or "") and it["think"] == "max" for it in items)
@@ -404,6 +411,10 @@ def build():
     assert any(it["model"] == "space-bunny" and it["agent"] == "Codebuddy" and it["think"] == "max" and it["secs"] == 203 and it["released"] == "2026-09-23" and not it["relay"] for it in items)
     assert any(it["model"] == "step-5-preview" and it["agent"] == "Codebuddy" and it["think"] == "high" and it["secs"] == 513 and it["released"] == "2026-09-20" for it in items)
     assert any(it["model"] == "muse-wonder" and it["agent"] == "Pi" and it["channel"] == "OpenRouter" and it["think"] == "max" and it["secs"] == 47 and it["released"] == "2026-10-12" and not it["relay"] for it in items)
+    argon = [it for it in items if it["model"] == "gemini-4-argon"]
+    assert len(argon) == 1 and argon[0]["agent"] == "Pi" and argon[0]["channel"] == "OpenRouter" and argon[0]["think"] == "high" and argon[0]["secs"] == 612 and argon[0]["released"] == "2026-09-30" and not argon[0]["relay"]
+    gemini_models = list(dict.fromkeys(it["model"] for it in items if it["family"] == "gemini"))
+    assert gemini_models[0] == "gemini-4-argon" and gemini_models[1] == "gemini-3.8-flash"
     assert any(it["model"] == "mimo-v2.6-pro" and it["think"] == "high" and it["secs"] == 688 and "mimo coding plan" in (it.get("extra") or "") and not it["relay"] for it in items)
     assert any(it["channel"] == "cursor" and it["relay"] for it in items)
     return len(items), n_models, n_fam
