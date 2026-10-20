@@ -30,6 +30,7 @@
 .rnlbl{font-size:1.05rem;font-weight:600;color:#2b3038}  /* 「更新说明：」要比公告正文醒目 */
 .page-title{letter-spacing:-.01em}
 .min-w-0{min-width:0}
+.card-header .min-w-0>div{overflow-wrap:anywhere}
 .card.base{border-color:var(--bs-success)}
 .ico{width:18px;height:18px;border-radius:4px;background:#fff;border:1px solid #dee2e6}
 .ico-lg{width:36px;height:36px;border-radius:8px;background:#fff;border:1px solid #dee2e6}
@@ -90,7 +91,7 @@ const tags=x=>[x.channel?["success",x.channel,toolIco(x.channel,x.family,x.badge
       :`<span class="badge text-bg-${c} tag d-inline-flex align-items-center gap-1">${u?`<img class="ico" src="${ico(u)}" alt="">`:""}${esc(t)}</span>`).join(" ");
 const card=x=>`<div class="card h-100${x.base?" base":""}">
   <div class="card-header py-2 d-flex justify-content-between align-items-start gap-2" onclick="window.open('${x.file}','_blank')" style="cursor:pointer">
-    <div>
+    <div class="min-w-0">
       <div><span class="d-inline-flex align-items-center gap-1">${x.agent?`<img class="ico" src="${agentIco(x.agent)}" alt="" title="${esc(x.agent)}">`:""}<span class="fw-semibold">${esc(title(x))}</span></span> <span class="time font-monospace">${fmt(x.secs)}</span></div>
       <div class="d-flex flex-wrap gap-1 mt-1">${tags(x)}</div>
       ${x.note1||x.note?`<div class="text-secondary small mt-1">${esc([x.note1,x.note].filter(Boolean).join(" · "))}</div>`:""}
