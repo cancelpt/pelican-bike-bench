@@ -30,6 +30,22 @@ export const FAM_LAB = {
     longcat: "LongCat", minimax: "MiniMax", mimo: "MiMo", muse: "Meta", step: "StepFun",
     space: "Stealth",
 };
+export const famOf = (model) => {
+    const m = (model || "").toLowerCase();
+    const rules = [
+        ["gpt-", "gpt"], ["o1", "gpt"], ["o3", "gpt"], ["o4", "gpt"],
+        ["claude", "claude"], ["gemini", "gemini"], ["glm", "glm"],
+        ["deepseek", "deepseek"], ["qwen", "qwen"], ["kimi", "kimi"],
+        ["seed", "seed"], ["doubao", "seed"], ["grok", "grok"],
+        ["hy", "hy"], ["hunyuan", "hy"], ["longcat", "longcat"],
+        ["minimax", "minimax"], ["mimo", "mimo"], ["muse", "muse"],
+        ["step", "step"], ["space", "space"],
+    ];
+    for (const [pre, fam] of rules)
+        if (m.startsWith(pre))
+            return fam;
+    return "";
+};
 export const DEF_BADGE = {
     gpt: "OpenAI", claude: "Anthropic", gemini: "Google", glm: "Z.ai", qwen: "Qwen",
     deepseek: "DeepSeek", kimi: "Moonshot", seed: "Volcengine", grok: "xAI", hy: "Tencent",
@@ -61,6 +77,7 @@ export const TOOL_SITE = {
     WorkBuddy: "https://www.workbuddy.ai",
     TraeCode: "https://www.trae.com.cn",
     ZCode: "https://z.ai",
+    OpenCode: "https://opencode.ai",
     OpenRouter: "https://openrouter.ai",
     "SuperGrok Heavy": "https://x.ai",
 };
@@ -74,6 +91,7 @@ export const AGENT_SITE = {
     TraeCode: "https://www.trae.com.cn/",
     ZCode: "https://z.ai/",
     Pi: "https://pi.dev/",
+    OpenCode: "https://opencode.ai",
 };
 export const THINK_RANK = {
     关闭: 0, off: 0,
@@ -85,9 +103,9 @@ export const THINK_RANK = {
     ultra: 8,
 };
 export const OPTS = {
-    agent: ["Pi", "Codex", "Claude Code", "Codebuddy", "ZCode", "TraeCode", "Gemini CLI", "Grok Build", ""],
-    channel: ["官方订阅", "官方API", "OpenRouter", "CodeBuddy", "WorkBuddy", "TraeCode", "ZCode", "cursor", "antigravity", "gemini-cli", "SuperGrok Heavy", ""],
-    badge: ["", ...Object.keys(BADGE_SITE)],
+    agent: ["Pi", "Codex", "OpenCode", "Claude Code", "Codebuddy", "ZCode", "TraeCode", "Gemini CLI", "Grok Build", ""],
+    channel: ["官方订阅", "官方API", "OpenRouter", "CodeBuddy", "WorkBuddy", "TraeCode", "ZCode", "OpenCode", "cursor", "antigravity", "gemini-cli", "SuperGrok Heavy", ""],
+    badge: ["", ...new Set([...Object.keys(BADGE_SITE), ...Object.keys(AGENT_SITE), ...Object.keys(TOOL_SITE)])],
     think: ["关闭", "默认", "开启", "low", "medium", "high", "高", "极高", "最高", "max", "xhigh", "ultra", ""],
 };
 export function iconKey(url) {
@@ -109,7 +127,11 @@ export const thinkCls = (x) => {
         throw new Error(`未登记的思考强度: ${t}`);
     return `tk${r}`;
 };
-export const toolIco = (channel, family, badge) => BADGE_SITE[badge] || TOOL_SITE[channel] || (family && SITE[family]) || "";
+export const badgeSiteOf = (name) => BADGE_SITE[name]
+    || AGENT_SITE[name]
+    || TOOL_SITE[name]
+    || "";
+export const toolIco = (channel, family, badge) => badgeSiteOf(badge) || TOOL_SITE[channel] || (family && SITE[family]) || "";
 export const effBadge = (r) => r.badge || DEF_BADGE[r.family] || "";
 const RELAY_ALIAS = { "刀": "c" };
 export const maskSite = (s) => {
