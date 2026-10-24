@@ -107,6 +107,7 @@ export const AGENT_SITE = {
     OpenCode: "https://opencode.ai",
     "OpenCode Go": "https://opencode.ai",
     "MiniMax Code": "https://agent.minimaxi.com",
+    "Kimi Code": "https://www.kimi.com",
 };
 export const THINK_RANK = {
     关闭: 0, off: 0,
@@ -118,7 +119,7 @@ export const THINK_RANK = {
     ultra: 8,
 };
 export const OPTS = {
-    agent: ["Pi", "Codex", "OpenCode", "Claude Code", "Codebuddy", "ZCode", "TraeCode", "Gemini CLI", "Grok Build", "MiniMax Code", ""],
+    agent: ["Pi", "Codex", "OpenCode", "Claude Code", "Codebuddy", "ZCode", "TraeCode", "Gemini CLI", "Grok Build", "MiniMax Code", "Kimi Code", ""],
     channel: ["官方订阅", "官方API", "OpenRouter", "CodeBuddy", "WorkBuddy", "TraeCode", "ZCode", "OpenCode Free", "OpenCode Go", "cursor", "antigravity", "gemini-cli", "SuperGrok Heavy", ""],
     badge: ["", ...new Set([...Object.keys(BADGE_SITE), ...Object.keys(AGENT_SITE), ...Object.keys(TOOL_SITE)])],
     think: ["关闭", "默认", "开启", "low", "medium", "high", "高", "极高", "最高", "max", "xhigh", "ultra", ""],
