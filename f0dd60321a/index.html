@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pelican on a Bicycle</title>
+<style>
+  body { margin:0; background:#87ceeb; display:flex; align-items:center; justify-content:center; height:100vh; }
+  svg { width:90vw; max-width:900px; height:auto; }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
+  <!-- Ground -->
+  <rect x="0" y="360" width="800" height="60" fill="#7ec850"/>
+  <line x1="0" y1="360" x2="800" y2="360" stroke="#5a9a3a" stroke-width="2"/>
+
+  <!-- Bike -->
+  <g id="bike">
+    <!-- Rear wheel -->
+    <g id="rearWheel" transform="translate(200,300)">
+      <circle r="60" fill="none" stroke="#333" stroke-width="6"/>
+      <circle r="8" fill="#333"/>
+      <g id="rearSpokes">
+        <line x1="0" y1="-55" x2="0" y2="55" stroke="#999" stroke-width="2"/>
+        <line x1="-55" y1="0" x2="55" y2="0" stroke="#999" stroke-width="2"/>
+        <line x1="-39" y1="-39" x2="39" y2="39" stroke="#999" stroke-width="2"/>
+        <line x1="-39" y1="39" x2="39" y2="-39" stroke="#999" stroke-width="2"/>
+      </g>
+    </g>
+    <!-- Front wheel -->
+    <g id="frontWheel" transform="translate(520,300)">
+      <circle r="60" fill="none" stroke="#333" stroke-width="6"/>
+      <circle r="8" fill="#333"/>
+      <g id="frontSpokes">
+        <line x1="0" y1="-55" x2="0" y2="55" stroke="#999" stroke-width="2"/>
+        <line x1="-55" y1="0" x2="55" y2="0" stroke="#999" stroke-width="2"/>
+        <line x1="-39" y1="-39" x2="39" y2="39" stroke="#999" stroke-width="2"/>
+        <line x1="-39" y1="39" x2="39" y2="-39" stroke="#999" stroke-width="2"/>
+      </g>
+    </g>
+    <!-- Frame -->
+    <g stroke="#c0392b" stroke-width="5" fill="none" stroke-linecap="round">
+      <line x1="200" y1="300" x2="260" y2="230"/><!-- seat stay -->
+      <line x1="260" y1="230" x2="360" y2="255"/><!-- top tube -->
+      <line x1="360" y1="255" x2="200" y2="300"/><!-- down tube -->
+      <line x1="360" y1="255" x2="520" y2="300"/><!-- chain stay to front? fork base -->
+      <line x1="520" y1="300" x2="470" y2="230"/><!-- fork -->
+      <line x1="470" y1="230" x2="360" y2="255"/><!-- top tube front -->
+    </g>
+    <!-- Seat -->
+    <ellipse cx="260" cy="225" rx="22" ry="6" fill="#333"/>
+    <!-- Handlebars -->
+    <g stroke="#333" stroke-width="4" fill="none" stroke-linecap="round">
+      <line x1="470" y1="230" x2="455" y2="200"/>
+      <line x1="455" y1="200" x2="485" y2="200"/>
+    </g>
+    <!-- Crank -->
+    <g id="crank" transform="translate(360,255)">
+      <circle r="10" fill="#555"/>
+    </g>
+    <!-- Pedals drawn separately -->
+  </g>
+
+  <!-- Pelican -->
+  <g id="pelican">
+    <!-- Body -->
+    <ellipse id="body" cx="290" cy="200" rx="46" ry="30" fill="#f0f0f0" stroke="#999" stroke-width="2"/>
+    <!-- Wing -->
+    <path id="wing" d="M260,195 Q230,170 250,215" fill="#d9d9d9" stroke="#999" stroke-width="2"/>
+    <!-- Neck -->
+    <path d="M315,185 Q335,150 330,120" fill="none" stroke="#f0f0f0" stroke-width="14" stroke-linecap="round"/>
+    <path d="M315,185 Q335,150 330,120" fill="none" stroke="#999" stroke-width="2"/>
+    <!-- Head -->
+    <ellipse cx="330" cy="112" rx="22" ry="16" fill="#f0f0f0" stroke="#999" stroke-width="2"/>
+    <!-- Eye -->
+    <circle cx="340" cy="108" r="3" fill="#333"/>
+    <!-- Beak -->
+    <path d="M350,112 L410,108 L352,122 Z" fill="#f4a261" stroke="#c97a3a" stroke-width="1.5"/>
+    <path d="M352,118 Q385,125 408,120" fill="none" stroke="#c97a3a" stroke-width="1"/>
+    <!-- Legs (will be updated by JS) -->
+    <g id="legs" stroke="#f4a261" stroke-width="4" fill="none" stroke-linecap="round">
+      <polyline id="legL" points="270,225 270,270 200,300"/>
+      <polyline id="legR" points="300,225 300,270 200,300"/>
+    </g>
+    <!-- Feet on pedals placeholder -->
+  </g>
+</svg>
+
+<script>
+const crankCx = 360, crankCy = 255, crankR = 45;
+const hipL = {x:270, y:225};
+const hipR = {x:300, y:225};
+const upperLen = 45, lowerLen = 55;
+
+function ik(hip, target) {
+  // 2-link IK, knee below-ish
+  const dx = target.x - hip.x;
+  const dy = target.y - hip.y;
+  const dist = Math.hypot(dx,dy);
+  const d = Math.min(dist, upperLen+lowerLen-0.1);
+  // angle of line hip->target
+  const base = Math.atan2(dy, dx);
+  // law of cosines for upper
+  const cosU = (upperLen*upperLen + d*d - lowerLen*lowerLen)/(2*upperLen*d);
+  const angU = Math.acos(Math.max(-1,Math.min(1,cosU)));
+  // knee
+  const kx = hip.x + upperLen*Math.cos(base - angU); // bend downward? 
+  const ky = hip.y + upperLen*Math.sin(base - angU);
+  return {knee:{x:kx,y:ky}};
+}
+
+let t = 0;
+function frame() {
+  t += 0.04;
+  const angle = t * 2; // crank angle
+
+  // wheels rotate (clockwise visually = positive angle in svg? y down, clockwise positive)
+  document.getElementById('rearWheel').setAttribute('transform', `translate(200,300) rotate(${angle*180/Math.PI})`);
+  document.getElementById('frontWheel').setAttribute('transform', `translate(520,300) rotate(${angle*180/Math.PI})`);
+  // spokes rotate with wheel already via group? wheel group contains spokes, yes rotating group rotates spokes.
+
+  // crank visual: draw crank arms + pedals
+  // remove old crank arms? We'll create dynamic. Instead update a group.
+  let crankG = document.getElementById('crankArms');
+  if (!crankG) {
+    crankG = document.createElementNS('http://www.w3.org/2000/svg','g');
+    crankG.id = 'crankArms';
+    crankG.setAttribute('stroke','#555');
+    crankG.setAttribute('stroke-width','4');
+    document.getElementById('bike').appendChild(crankG);
+  }
+  // pedal positions
+  const pL = { x: crankCx + crankR*Math.cos(angle), y: crankCy + crankR*Math.sin(angle) };
+  const pR = { x: crankCx + crankR*Math.cos(angle+Math.PI), y: crankCy + crankR*Math.sin(angle+Math.PI) };
+
+  crankG.innerHTML = '';
+  // arms
+  const mkLine = (x1,y1,x2,y2) => { const l=document.createElementNS('http://www.w3.org/2000/svg','line'); l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2); return l; };
+  crankG.appendChild(mkLine(crankCx,crankCy, pL.x,pL.y));
+  crankG.appendChild(mkLine(crankCx,crankCy, pR.x,pR.y));
+  // pedals
+  const mkRect = (cx,cy) => { const r=document.createElementNS('http://www.w3.org/2000/svg','rect'); r.setAttribute('x',cx-12);r.setAttribute('y',cy-4);r.setAttribute('width',24);r.setAttribute('height',8);r.setAttribute('rx',3);r.setAttribute('fill','#333'); return r; };
+  crankG.appendChild(mkRect(pL.x,pL.y));
+  crankG.appendChild(mkRect(pR.x,pR.y));
+
+  // body bob
+  const bob = Math.sin(t*4)*3;
+  const body = document.getElementById('body');
+  body.setAttribute('cy', 200 + bob);
+  // update neck/head/beak? keep simple: shift pelican group? Instead shift a container. We'll shift legs hips too.
+  const pelican = document.getElementById('pelican');
+  pelican.setAttribute('transform', `translate(0,${bob})`);
+
+  // legs IK
+  const targets = [ {hip:hipL, pedal:pL, id:'legL'}, {hip:hipR, pedal:pR, id:'legR'} ];
+  targets.forEach(({hip,pedal,id}) => {
+    const h = {x:hip.x, y:hip.y + bob};
+    const k = ik(h, pedal).knee;
+    const poly = document.getElementById(id);
+    poly.setAttribute('points', `${h.x},${h.y} ${k.x},${k.y} ${pedal.x},${pedal.y}`);
+  });
+
+  // wing flap
+  const wing = document.getElementById('wing');
+  const flap = Math.sin(t*4)*8;
+  wing.setAttribute('transform', `rotate(${flap}, 260, 195)`);
+
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
+</body>
+</html>

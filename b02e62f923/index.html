@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鹈鹕骑自行车</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #e0f7fa;
+      overflow: hidden;
+    }
+    svg {
+      width: 90vw;
+      height: 80vh;
+      max-width: 1000px;
+      max-height: 700px;
+      background: linear-gradient(#87CEEB 0%, #E0F7FA 70%, #90EE90 70%, #7CFC00 100%);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- 轮胎 -->
+      <g id="wheel">
+        <circle cx="0" cy="0" r="60" fill="none" stroke="#333" stroke-width="8"/>
+        <circle cx="0" cy="0" r="52" fill="none" stroke="#ddd" stroke-width="2"/>
+        <g stroke="#888" stroke-width="2">
+          <line x1="-50" y1="0" x2="50" y2="0"/>
+          <line x1="0" y1="-50" x2="0" y2="50"/>
+          <line x1="-35" y1="-35" x2="35" y2="35"/>
+          <line x1="35" y1="-35" x2="-35" y2="35"/>
+        </g>
+      </g>
+
+      <!-- 云朵 -->
+      <g id="cloud" fill="#fff" opacity="0.9">
+        <circle cx="0" cy="0" r="20"/>
+        <circle cx="25" cy="-8" r="25"/>
+        <circle cx="55" cy="0" r="20"/>
+        <circle cx="30" cy="8" r="18"/>
+      </g>
+    </defs>
+
+    <!-- 背景云朵滚动 -->
+    <g>
+      <use href="#cloud" x="100" y="80" transform="scale(1.2)">
+        <animateTransform attributeName="transform" type="translate" from="900 0" to="-200 0" dur="12s" repeatCount="indefinite" additive="sum"/>
+      </use>
+      <use href="#cloud" x="500" y="120">
+        <animateTransform attributeName="transform" type="translate" from="900 0" to="-200 0" dur="18s" repeatCount="indefinite" additive="sum"/>
+      </use>
+      <use href="#cloud" x="300" y="60" transform="scale(0.8)">
+        <animateTransform attributeName="transform" type="translate" from="900 0" to="-200 0" dur="15s" repeatCount="indefinite" additive="sum"/>
+      </use>
+    </g>
+
+    <!-- 地面虚线滚动 -->
+    <line x1="0" y1="420" x2="800" y2="420" stroke="#555" stroke-width="4" stroke-dasharray="60 80" stroke-linecap="round">
+      <animate attributeName="stroke-dashoffset" from="0" to="-140" dur="0.6s" repeatCount="indefinite"/>
+    </line>
+
+    <!-- 自行车 -->
+    <g id="bike">
+      <!-- 车架 -->
+      <path d="M300,400 L340,330 L380,400 Z" fill="none" stroke="#FF6B6B" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M340,330 L460,260 L380,400 Z" fill="none" stroke="#FF6B6B" stroke-width="7" stroke-linejoin="round"/>
+      <line x1="460" y1="260" x2="500" y2="400" stroke="#FF6B6B" stroke-width="7" stroke-linecap="round"/>
+      <line x1="340" y1="330" x2="330" y2="310" stroke="#FF6B6B" stroke-width="6" stroke-linecap="round"/>
+      <!-- 车座 -->
+      <path d="M320,310 Q340,305 360,310" fill="none" stroke="#333" stroke-width="8" stroke-linecap="round"/>
+      <!-- 车把 -->
+      <path d="M450,260 L480,250 L490,230" fill="none" stroke="#333" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="490" cy="230" r="5" fill="#333"/>
+
+      <!-- 后轮 -->
+      <use href="#wheel" x="300" y="400">
+        <animateTransform attributeName="transform" type="rotate" from="0 300 400" to="360 300 400" dur="0.8s" repeatCount="indefinite"/>
+      </use>
+      <!-- 前轮 -->
+      <use href="#wheel" x="500" y="400">
+        <animateTransform attributeName="transform" type="rotate" from="0 500 400" to="360 500 400" dur="0.8s" repeatCount="indefinite"/>
+      </use>
+
+      <!-- 牙盘/脚踏旋转组 -->
+      <g id="pedals" transform="translate(380,400)">
+        <circle cx="0" cy="0" r="12" fill="#555"/>
+        <line x1="-35" y1="0" x2="35" y2="0" stroke="#555" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="35" cy="0" rx="14" ry="7" fill="#333"/>
+        <ellipse cx="-35" cy="0" rx="14" ry="7" fill="#333"/>
+        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1.5s" repeatCount="indefinite" additive="sum"/>
+      </g>
+    </g>
+
+    <!-- 鹈鹕 -->
+    <g id="pelican">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,4; 0,0" dur="0.75s" repeatCount="indefinite"/>
+
+      <!-- 尾巴 -->
+      <path d="M270,310 Q250,300 245,320 Q260,335 280,325" fill="#fff" stroke="#ddd" stroke-width="2"/>
+
+      <!-- 左腿（远侧） -->
+      <line id="legL" x1="340" y1="325" x2="345" y2="400" stroke="#ff8c00" stroke-width="9" stroke-linecap="round"/>
+
+      <!-- 右腿（近侧） -->
+      <line id="legR" x1="340" y1="325" x2="415" y2="400" stroke="#ff8c00" stroke-width="9" stroke-linecap="round"/>
+
+      <!-- 身体 -->
+      <ellipse cx="330" cy="305" rx="60" ry="42" fill="#fff" stroke="#ddd" stroke-width="2"/>
+      <!-- 翅膀 -->
+      <path d="M300,295 Q270,310 285,340 Q320,325 340,305" fill="#f8f8f8" stroke="#ddd" stroke-width="2">
+        <animateTransform attributeName="transform" type="rotate" values="0 330 305; 8 330 305; 0 330 305" dur="1.2s" repeatCount="indefinite"/>
+      </path>
+
+      <!-- 脖子 -->
+      <path d="M330,265 Q330,240 330,225 Q330,205 330,190" fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round"/>
+      <!-- 头部 -->
+      <circle cx="330" cy="190" r="32" fill="#fff" stroke="#ddd" stroke-width="2"/>
+      <!-- 头顶羽毛 -->
+      <path d="M320,162 Q315,150 325,155" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+      <!-- 眼睛 -->
+      <circle cx="340" cy="185" r="4" fill="#000"/>
+      <circle cx="341" cy="184" r="1.5" fill="#fff"/>
+      <!-- 大嘴 -->
+      <path d="M355,195 L445,190 L445,215 L360,210 Z" fill="#ffae00" stroke="#e69500" stroke-width="2"/>
+      <path d="M355,195 L445,190" fill="none" stroke="#333" stroke-width="1.5"/>
+      <!-- 喉囊 -->
+      <path d="M360,210 Q400,235 445,215" fill="#ffd166" stroke="#e69500" stroke-width="1.5"/>
+
+      <!-- 翅膀当作手臂握住车把 -->
+      <path d="M315,290 Q400,270 485,232" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+      <path d="M315,290 Q400,270 485,232" fill="none" stroke="#ddd" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
+    <!-- 速度线 -->
+    <g stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.6">
+      <line x1="700" y1="100" x2="620" y2="100">
+        <animate attributeName="x1" from="800" to="-100" dur="0.5s" repeatCount="indefinite"/>
+        <animate attributeName="x2" from="720" to="-180" dur="0.5s" repeatCount="indefinite"/>
+      </line>
+      <line x1="750" y1="350" x2="680" y2="350">
+        <animate attributeName="x1" from="850" to="-50" dur="0.4s" repeatCount="indefinite"/>
+        <animate attributeName="x2" from="780" to="-120" dur="0.4s" repeatCount="indefinite"/>
+      </line>
+      <line x1="720" y1="450" x2="650" y2="450">
+        <animate attributeName="x1" from="820" to="-80" dur="0.6s" repeatCount="indefinite"/>
+        <animate attributeName="x2" from="750" to="-150" dur="0.6s" repeatCount="indefinite"/>
+      </line>
+    </g>
+  </svg>
+
+  <script>
+    const crank = { x: 380, y: 400, r: 35 };
+    const hip = { x: 340, y: 325 };
+    const legL = document.getElementById('legL');
+    const legR = document.getElementById('legR');
+    const start = performance.now();
+
+    function updateLegs() {
+      const t = (performance.now() - start) / 1500 * Math.PI * 2;
+      // 右腿与右侧踏板同步
+      const rx = crank.x + crank.r * Math.cos(t);
+      const ry = crank.y + crank.r * Math.sin(t);
+      // 左腿相位相反
+      const lx = crank.x + crank.r * Math.cos(t + Math.PI);
+      const ly = crank.y + crank.r * Math.sin(t + Math.PI);
+
+      legR.setAttribute('x1', hip.x);
+      legR.setAttribute('y1', hip.y);
+      legR.setAttribute('x2', rx);
+      legR.setAttribute('y2', ry);
+
+      legL.setAttribute('x1', hip.x);
+      legL.setAttribute('y1', hip.y);
+      legL.setAttribute('x2', lx);
+      legL.setAttribute('y2', ly);
+
+      requestAnimationFrame(updateLegs);
+    }
+
+    requestAnimationFrame(updateLegs);
+  </script>
+</body>
+</html>
