@@ -165,6 +165,7 @@ export const fmt = (s) => {
     return (m ? m + "分" : "") + x + "秒";
 };
 export const extraLab = (e) => e.replace("由🎸Enderiose提供", "提供人 · 🎸Enderiose");
+export const extraTags = (e) => String(e || "").split(/[;；]/).map((x) => extraLab(x.trim())).filter(Boolean);
 export const parseSecs = (name) => {
     const n = (s) => Number(s);
     const rules = [
