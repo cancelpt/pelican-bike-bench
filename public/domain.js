@@ -15,6 +15,10 @@ export const SITE = {
     muse: "https://ai.meta.com",
     step: "https://www.stepfun.com",
     space: "https://openrouter.ai/stealth",
+    beam: "https://reflection.ai",
+    pickle: "https://opencode.ai",
+    flint: "https://opencode.ai",
+    nemotron: "https://build.nvidia.com",
 };
 export const DISPLAY = {
     "deepseek-v4flash": "deepseek-v4-flash",
@@ -28,7 +32,7 @@ export const FAM_LAB = {
     gpt: "OpenAI", claude: "Anthropic", gemini: "Google", glm: "Z.ai", qwen: "Qwen",
     deepseek: "DeepSeek", kimi: "Moonshot", seed: "ByteDance", grok: "xAI", hy: "Tencent",
     longcat: "LongCat", minimax: "MiniMax", mimo: "MiMo", muse: "Meta", step: "StepFun",
-    space: "Stealth",
+    space: "Stealth", beam: "Reflection AI", pickle: "Big Pickle", flint: "Flint", nemotron: "NVIDIA",
 };
 export const famOf = (model) => {
     const m = (model || "").toLowerCase();
@@ -39,7 +43,8 @@ export const famOf = (model) => {
         ["seed", "seed"], ["doubao", "seed"], ["grok", "grok"],
         ["hy", "hy"], ["hunyuan", "hy"], ["longcat", "longcat"],
         ["minimax", "minimax"], ["mimo", "mimo"], ["muse", "muse"],
-        ["step", "step"], ["space", "space"],
+        ["step", "step"], ["space", "space"], ["beam", "beam"],
+        ["big-pickle", "pickle"], ["pickle", "pickle"], ["flint", "flint"], ["nemotron", "nemotron"],
     ];
     for (const [pre, fam] of rules)
         if (m.startsWith(pre))
@@ -50,6 +55,7 @@ export const DEF_BADGE = {
     gpt: "OpenAI", claude: "Anthropic", gemini: "Google", glm: "Z.ai", qwen: "Qwen",
     deepseek: "DeepSeek", kimi: "Moonshot", seed: "Volcengine", grok: "xAI", hy: "Tencent",
     longcat: "LongCat", minimax: "MiniMax", mimo: "MiMo", muse: "Meta", step: "StepFun",
+    beam: "Reflection AI", pickle: "Big Pickle", flint: "Flint", nemotron: "NVIDIA",
 };
 export const BADGE_SITE = {
     OpenAI: "https://openai.com",
@@ -67,6 +73,10 @@ export const BADGE_SITE = {
     MiniMax: "https://minimaxi.com/",
     StepFun: "https://www.stepfun.com",
     Tencent: "https://hunyuan.tencent.com",
+    "Reflection AI": "https://reflection.ai",
+    "Big Pickle": "https://opencode.ai",
+    Flint: "https://opencode.ai",
+    NVIDIA: "https://build.nvidia.com",
 };
 export const TOOL_SITE = {
     "Claude Code": "https://claude.com/",
@@ -78,6 +88,7 @@ export const TOOL_SITE = {
     TraeCode: "https://www.trae.com.cn",
     ZCode: "https://z.ai",
     OpenCode: "https://opencode.ai",
+    "OpenCode Free": "https://opencode.ai",
     "OpenCode Go": "https://opencode.ai",
     "MiniMax Code": "https://agent.minimaxi.com",
     OpenRouter: "https://openrouter.ai",
