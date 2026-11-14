@@ -35,7 +35,7 @@ export const FAM_LAB = {
     space: "Stealth", beam: "Reflection AI", pickle: "Big Pickle", flint: "Flint", nemotron: "NVIDIA",
 };
 export const famOf = (model) => {
-    const m = (model || "").toLowerCase();
+    const m = String(model).toLowerCase();
     const rules = [
         ["gpt-", "gpt"], ["o1", "gpt"], ["o3", "gpt"], ["o4", "gpt"],
         ["claude", "claude"], ["gemini", "gemini"], ["glm", "glm"],
@@ -100,6 +100,7 @@ export const AGENT_SITE = {
     "Claude Code": "https://claude.com/",
     Codex: "https://openai.com/codex/",
     "Gemini CLI": "https://geminicli.com/",
+    Antigravity: "https://antigravity.google",
     "Grok Build": "https://x.ai/",
     Codebuddy: "https://www.codebuddy.ai",
     WorkBuddy: "https://www.workbuddy.ai",
@@ -123,7 +124,7 @@ export const THINK_RANK = {
     ultra: 8,
 };
 export const OPTS = {
-    agent: ["Pi", "Codex", "OpenCode", "Claude Code", "Codebuddy", "ZCode", "TraeCode", "TraeWork", "WorkBuddy", "Gemini CLI", "Grok Build", "MiniMax Code", "Kimi Code", "Qoder", ""],
+    agent: ["Pi", "Codex", "OpenCode", "Claude Code", "Codebuddy", "ZCode", "TraeCode", "TraeWork", "WorkBuddy", "Gemini CLI", "Antigravity", "Grok Build", "MiniMax Code", "Kimi Code", "Qoder", ""],
     channel: ["官方订阅", "官方API", "OpenRouter", "CodeBuddy", "WorkBuddy", "TraeCode", "TraeWork", "ZCode", "OpenCode Free", "OpenCode Go", "Qoder", "cursor", "antigravity", "gemini-cli", "SuperGrok Heavy", ""],
     badge: ["", ...new Set([...Object.keys(BADGE_SITE), ...Object.keys(AGENT_SITE), ...Object.keys(TOOL_SITE)])],
     think: ["关闭", "默认", "开启", "low", "medium", "high", "高", "极高", "最高", "max", "xhigh", "ultra", ""],
