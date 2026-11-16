@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹈鹕骑行记 · Pelican Express</title>
+<style>
+  :root{
+    --bg0:#120d1e; --bg1:#1c1430; --surface:#211a38; --surface2:#2a2145;
+    --line:#3a3058; --ink:#f5ead8; --ink-dim:#b8a8c8; --ink-faint:#8a7aa0;
+    --amber:#ffb347; --coral:#ff6b5e; --magenta:#e84a8a; --teal:#17c3d4;
+    --green:#3ddc97; --danger:#ff5470;
+    --acc-grad:linear-gradient(100deg,var(--amber),var(--coral) 55%,var(--magenta));
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    min-height:100vh; color:var(--ink);
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(232,74,138,.16), transparent 60%),
+      radial-gradient(900px 700px at -10% 110%, rgba(23,195,212,.13), transparent 60%),
+      linear-gradient(160deg,var(--bg0),var(--bg1) 60%,#17102a);
+    overflow-x:hidden;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .aurora{position:fixed; border-radius:50%; filter:blur(90px); z-index:0; pointer-events:none; opacity:.35}
+  .aurora.a{width:46vw;height:46vw;left:-14vw;top:-18vw;background:radial-gradient(circle,#e84a8a55,transparent 70%);animation:drift1 26s ease-in-out infinite alternate}
+  .aurora.b{width:40vw;height:40vw;right:-12vw;bottom:-16vw;background:radial-gradient(circle,#17c3d455,transparent 70%);animation:drift2 32s ease-in-out infinite alternate}
+  @keyframes drift1{to{transform:translate(9vw,7vh) scale(1.15)}}
+  @keyframes drift2{to{transform:translate(-8vw,-6vh) scale(1.1)}}
+  @media (prefers-reduced-motion: reduce){.aurora{animation:none}}
+
+  header{
+    position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between;
+    padding:14px 26px; background:rgba(18,13,30,.72); backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex; align-items:center; gap:12px}
+  .brand .mark{width:38px;height:38px;flex:none}
+  .brand h1{
+    font-family:"ZCOOL KuaiLe","Noto Sans SC",sans-serif; font-weight:400;
+    font-size:clamp(20px,2.6vw,28px); letter-spacing:2px;
+    background:var(--acc-grad); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .brand small{display:block; font-family:"Noto Sans SC",sans-serif; font-size:11px; letter-spacing:4px; color:var(--ink-faint); -webkit-text-fill-color:var(--ink-faint)}
+  .sound-toggle{
+    display:flex; align-items:center; gap:8px; cursor:pointer;
+    background:var(--surface); border:1px solid var(--line); color:var(--ink);
+    padding:8px 16px; border-radius:999px; font-size:13px; font-family:inherit;
+    transition:border-color .2s, transform .15s, box-shadow .2s;
+  }
+  .sound-toggle:hover{border-color:var(--amber); transform:translateY(-1px); box-shadow:0 4px 18px rgba(255,179,71,.18)}
+  .sound-toggle .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .sound-toggle[aria-pressed="false"] .dot{background:var(--danger);box-shadow:0 0 8px var(--danger)}
+
+  main{
+    position:relative; z-index:1; display:grid; grid-template-columns:minmax(0,1fr) 322px;
+    gap:22px; padding:24px 26px 30px; max-width:1560px; margin:0 auto; align-items:start;
+  }
+  .stage-wrap{min-width:0}
+  .stage{
+    position:relative; border-radius:22px; overflow:hidden; aspect-ratio:1200/720;
+    border:1px solid rgba(255,179,71,.28);
+    box-shadow:0 24px 70px rgba(0,0,0,.5), 0 0 0 6px rgba(33,26,56,.6), 0 0 60px rgba(232,74,138,.10);
+    background:#0a0a14;
+  }
+  .stage svg{display:block; width:100%; height:100%}
+  .hud{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:14px;
+  }
+  .chip{
+    display:flex; align-items:baseline; gap:7px; padding:8px 14px; border-radius:12px;
+    background:var(--surface); border:1px solid var(--line); font-size:12px; color:var(--ink-dim);
+  }
+  .chip b{font-size:16px; color:var(--amber); font-variant-numeric:tabular-nums; font-weight:700; min-width:44px; text-align:right}
+  .chip:nth-child(2) b{color:var(--teal)}
+  .chip:nth-child(3) b{color:var(--magenta)}
+  .hint{margin-left:auto; font-size:12px; color:var(--ink-faint); letter-spacing:1px}
+
+  .panel{
+    position:sticky; top:86px; max-height:calc(100vh - 110px); overflow-y:auto;
+    background:linear-gradient(170deg,var(--surface),#1b1531);
+    border:1px solid var(--line); border-radius:20px; padding:18px 16px 20px;
+    scrollbar-width:thin; scrollbar-color:var(--coral) #1a142c;
+    box-shadow:0 18px 50px rgba(0,0,0,.4);
+  }
+  .panel::-webkit-scrollbar{width:9px}
+  .panel::-webkit-scrollbar-track{background:#1a142c;border-radius:9px}
+  .panel::-webkit-scrollbar-thumb{background:linear-gradient(var(--amber),var(--coral));border-radius:9px;border:2px solid #1a142c}
+  .panel::-webkit-scrollbar-thumb:hover{background:linear-gradient(var(--coral),var(--magenta))}
+  .sect{margin-bottom:18px}
+  .sect h2{
+    font-size:12px; letter-spacing:3px; color:var(--amber); font-weight:700;
+    display:flex; align-items:center; gap:8px; margin-bottom:11px;
+  }
+  .sect h2::before{content:""; width:7px;height:7px;border-radius:2px;background:var(--acc-grad);transform:rotate(45deg)}
+  .sect h2::after{content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent)}
+  .row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px}
+  .row label{font-size:13px; color:var(--ink-dim); flex:none}
+  .row output{font-size:12px; color:var(--amber); font-variant-numeric:tabular-nums; min-width:38px; text-align:right}
+  .slider-row{display:block; margin-bottom:13px}
+  .slider-row .top{display:flex; justify-content:space-between; margin-bottom:6px}
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:6px; outline:none; cursor:pointer;
+    background:linear-gradient(90deg,var(--amber) var(--p,50%),#2c2347 var(--p,50%));
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:18px;height:18px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#ffe0ae,var(--amber) 60%,var(--coral));
+    border:2px solid #241028; box-shadow:0 2px 10px rgba(255,179,71,.5); transition:transform .15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--amber);border:2px solid #241028}
+  input[type=range]::-moz-range-track{height:6px;border-radius:6px;background:#2c2347}
+  input[type=range]::-moz-range-progress{height:6px;border-radius:6px;background:var(--amber)}
+
+  .swatches{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:12px}
+  .swatch{display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--line); border-radius:12px; padding:7px 9px; cursor:pointer; transition:border-color .2s}
+  .swatch:hover{border-color:var(--amber)}
+  .swatch span{font-size:12px; color:var(--ink-dim)}
+  .swatch input[type=color]{width:30px;height:26px;border:none;padding:0;background:none;cursor:pointer;border-radius:6px}
+  .swatch input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+  .swatch input[type=color]::-webkit-color-swatch{border:1px solid rgba(255,255,255,.25);border-radius:6px}
+  .swatch input[type=color]::-moz-color-swatch{border:1px solid rgba(255,255,255,.25);border-radius:6px}
+
+  .switch{
+    position:relative; width:46px; height:25px; flex:none; border-radius:999px; cursor:pointer;
+    background:#2c2347; border:1px solid var(--line); transition:background .25s, border-color .25s;
+  }
+  .switch::after{
+    content:""; position:absolute; top:2px; left:2px; width:19px; height:19px; border-radius:50%;
+    background:#8a7aa0; transition:transform .25s cubic-bezier(.6,-.2,.3,1.4), background .25s;
+  }
+  .switch[aria-checked="true"]{background:linear-gradient(90deg,var(--amber),var(--coral)); border-color:transparent}
+  .switch[aria-checked="true"]::after{transform:translateX(21px); background:#fff6e9}
+
+  select{
+    width:100%; background:var(--surface2); color:var(--ink); border:1px solid var(--line);
+    border-radius:11px; padding:9px 12px; font-size:13px; font-family:inherit; cursor:pointer; outline:none;
+  }
+  select:focus{border-color:var(--amber)}
+
+  .btn-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px}
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    background:var(--surface2); color:var(--ink); border:1px solid var(--line);
+    border-radius:12px; padding:10px 8px; font-size:13px; font-family:inherit; cursor:pointer;
+    transition:transform .15s, border-color .2s, box-shadow .2s;
+  }
+  .btn:hover{transform:translateY(-2px); border-color:var(--amber); box-shadow:0 6px 18px rgba(255,179,71,.15)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{grid-column:1/-1; background:var(--acc-grad); color:#2a1030; font-weight:700; border:none}
+  .btn.primary:hover{box-shadow:0 8px 24px rgba(255,107,94,.35)}
+  .btn svg{flex:none}
+
+  footer{position:relative;z-index:1;text-align:center;padding:0 20px 26px;font-size:12px;color:var(--ink-faint);letter-spacing:2px}
+
+  .toast{
+    position:fixed; left:50%; bottom:30px; transform:translate(-50%,20px); z-index:50;
+    background:var(--acc-grad); color:#2a1030; font-weight:700; font-size:14px;
+    padding:11px 24px; border-radius:999px; opacity:0; pointer-events:none;
+    transition:opacity .3s, transform .3s; box-shadow:0 10px 30px rgba(255,107,94,.4);
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0)}
+
+  @media (max-width:1020px){
+    main{grid-template-columns:1fr}
+    .panel{position:static; max-height:none; display:grid; grid-template-columns:1fr 1fr; gap:0 22px}
+    .hint{margin-left:0; width:100%}
+  }
+  @media (max-width:620px){
+    main{padding:16px 14px 22px}
+    header{padding:12px 16px}
+    .panel{grid-template-columns:1fr}
+    .brand small{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="aurora a"></div><div class="aurora b"></div>
+
+<header>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="17" fill="none" stroke="#ffb347" stroke-width="3.5"/>
+      <circle cx="20" cy="20" r="4" fill="#ff6b5e"/>
+      <g stroke="#e84a8a" stroke-width="2.5" stroke-linecap="round">
+        <path d="M20 6v9M20 25v9M6 20h9M25 20h9M10 10l6.5 6.5M23.5 23.5L30 30M30 10l-6.5 6.5M16.5 23.5L10 30"/>
+      </g>
+    </svg>
+    <div>
+      <h1>鹈鹕骑行记</h1>
+      <small>PELICAN EXPRESS · 海岸线慢递</small>
+    </div>
+  </div>
+  <button id="soundBtn" class="sound-toggle" aria-pressed="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 5 6 9H2v6h4l5 4z" fill="currentColor" stroke="none"/>
+      <path class="snd-waves" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+    </svg>
+    <span id="soundLabel">声音：开</span><span class="dot"></span>
+  </button>
+</header>
+
+<main>
+  <section class="stage-wrap">
+    <div class="stage">
+      <svg id="scene" viewBox="0 0 1200 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="一只鹈鹕沿着海岸公路骑自行车的动画">
+        <style>
+          .t{transition:fill .9s ease,stroke .9s ease,stop-color .9s ease}
+          .to{transition:opacity .9s ease}
+          #pelicanG,#bellDome{cursor:pointer}
+          text{font-family:"ZCOOL KuaiLe","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+        </style>
+        <defs>
+          <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+            <stop id="skyS1" class="t" offset="0" stop-color="#3a2a63"/>
+            <stop id="skyS2" class="t" offset=".55" stop-color="#b4507a"/>
+            <stop id="skyS3" class="t" offset="1" stop-color="#ff9e5e"/>
+          </linearGradient>
+          <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+            <stop id="seaS1" class="t" offset="0" stop-color="#c86a80"/>
+            <stop id="seaS2" class="t" offset="1" stop-color="#5a3a6e"/>
+          </linearGradient>
+          <linearGradient id="roadG" x1="0" y1="0" x2="0" y2="1">
+            <stop id="roadS1" class="t" offset="0" stop-color="#6a4a68"/>
+            <stop id="roadS2" class="t" offset="1" stop-color="#413050"/>
+          </linearGradient>
+          <radialGradient id="sunGlowG" cx=".5" cy=".5" r=".5">
+            <stop id="glowS1" class="t" offset="0" stop-color="#ff9e5e" stop-opacity=".85"/>
+            <stop id="glowS2" class="t" offset="1" stop-color="#ff9e5e" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1">
+            <stop id="bodyS1" class="t" offset="0" stop-color="#fff6e9"/>
+            <stop id="bodyS2" class="t" offset="1" stop-color="#e8d3b8"/>
+          </linearGradient>
+          <linearGradient id="beakG" x1="0" y1="0" x2="0" y2="1">
+            <stop id="beakS1" class="t" offset="0" stop-color="#ffb347"/>
+            <stop id="beakS2" class="t" offset="1" stop-color="#ff9e2c"/>
+          </linearGradient>
+          <linearGradient id="pouchG" x1="0" y1="0" x2="0" y2="1">
+            <stop id="pouchS1" class="t" offset="0" stop-color="#ffd166"/>
+            <stop id="pouchS2" class="t" offset="1" stop-color="#ff9e2c"/>
+          </linearGradient>
+          <linearGradient id="beamG" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#ffd166" stop-opacity=".55"/>
+            <stop offset="1" stop-color="#ffd166" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="vigG" cx=".5" cy=".46" r=".78">
+            <stop offset=".62" stop-color="#1a0f2a" stop-opacity="0"/>
+            <stop offset="1" stop-color="#1a0f2a" stop-opacity=".34"/>
+          </radialGradient>
+        </defs>
+
+        <rect width="1200" height="720" fill="url(#skyG)"/>
+        <g id="starsG" class="to" opacity="0"></g>
+
+        <g id="sunG" class="to">
+          <circle cx="955" cy="148" r="132" fill="url(#sunGlowG)"/>
+          <g id="sunRays" stroke-linecap="round"></g>
+          <circle id="sunDisc" class="t" cx="955" cy="148" r="56" fill="#ffd166"/>
+        </g>
+        <g id="moonG" class="to" opacity="0">
+          <circle cx="955" cy="148" r="44" fill="#f4f1de"/>
+          <circle cx="942" cy="138" r="8" fill="#d8d4c0"/>
+          <circle cx="966" cy="158" r="6" fill="#d8d4c0"/>
+          <circle cx="958" cy="128" r="4.5" fill="#e2dec8"/>
+        </g>
+
+        <g id="cloudsG"></g>
+
+        <rect id="seaRect" x="0" y="470" width="1200" height="142" fill="url(#seaG)"/>
+        <line x1="0" y1="470" x2="1200" y2="470" class="t" data-paint="cloud" data-attr="stroke" stroke="#ffd9c0" stroke-width="2" opacity=".45"/>
+        <g id="wavesG" fill="none" stroke-linecap="round"></g>
+        <g id="sparklesG" fill="none" stroke-linecap="round"></g>
+        <g id="boatsG"></g>
+
+        <rect x="0" y="610" width="1200" height="110" fill="url(#roadG)"/>
+        <line x1="0" y1="611" x2="1200" y2="611" class="t" data-paint="cloud" data-attr="stroke" stroke="#ffd9c0" stroke-width="3" opacity=".5"/>
+        <g id="dashesG"></g>
+
+        <g id="speedG" stroke="#ffffff" stroke-linecap="round" opacity="0"></g>
+        <ellipse id="shadowEl" cx="600" cy="613" rx="205" ry="12" fill="#000000" opacity=".2"/>
+
+        <g id="farLegG" fill="none" stroke-linecap="round">
+          <path id="farThigh" class="t" data-paint="body3" data-attr="stroke" stroke-width="17"/>
+          <path id="farShin" class="t" data-paint="beak2" data-attr="stroke" stroke-width="10"/>
+        </g>
+
+        <g id="bikeG">
+          <g transform="translate(470 532)">
+            <g id="wheelRSpin">
+              <circle r="78" fill="none" stroke="#23222e" stroke-width="13"/>
+              <circle r="78" fill="none" stroke="#3c3c4e" stroke-width="13" stroke-dasharray="9 15" opacity=".7"/>
+              <circle r="62" fill="none" stroke="#cfd8e3" stroke-width="5"/>
+              <g stroke="#9aa8b8" stroke-width="3">
+                <path d="M0-60V60M-60 0H60M-42-42L42 42M-42 42L42-42"/>
+              </g>
+              <circle r="9" fill="#cfd8e3" stroke="#23222e" stroke-width="3"/>
+            </g>
+          </g>
+          <g transform="translate(730 532)">
+            <g id="wheelFSpin">
+              <circle r="78" fill="none" stroke="#23222e" stroke-width="13"/>
+              <circle r="78" fill="none" stroke="#3c3c4e" stroke-width="13" stroke-dasharray="9 15" opacity=".7"/>
+              <circle r="62" fill="none" stroke="#cfd8e3" stroke-width="5"/>
+              <g stroke="#9aa8b8" stroke-width="3">
+                <path d="M0-60V60M-60 0H60M-42-42L42 42M-42 42L42-42"/>
+              </g>
+              <circle r="9" fill="#cfd8e3" stroke="#23222e" stroke-width="3"/>
+            </g>
+          </g>
+          <path class="t" data-paint="frame" data-attr="stroke" d="M386 506A86 86 0 0 1 554 506" fill="none" stroke-width="7" stroke-linecap="round"/>
+          <path class="t" data-paint="frame" data-attr="stroke" d="M646 506A86 86 0 0 1 814 506" fill="none" stroke-width="7" stroke-linecap="round"/>
+          <path class="t" data-paint="frame2" data-attr="stroke" d="M470 532L392 512M730 532L808 512" fill="none" stroke-width="3"/>
+          <g class="t" data-paint="frame" data-attr="stroke" fill="none" stroke-width="8" stroke-linecap="round">
+            <path d="M528 442L686 434"/>
+            <path d="M565 558L696 468"/>
+            <path d="M565 558L524 440"/>
+            <path d="M528 446L470 532"/>
+            <path d="M565 558L470 532"/>
+            <path d="M688 430L700 470"/>
+            <path d="M700 470C712 494 722 514 730 532"/>
+          </g>
+          <path class="t" data-paint="frame2" data-attr="stroke" d="M524 440L518 424" stroke-width="6" stroke-linecap="round"/>
+          <path d="M496 420C506 412 534 412 544 420C544 426 536 430 520 430C506 430 496 426 496 420Z" fill="#4a3226"/>
+          <circle cx="470" cy="532" r="10" fill="none" stroke="#2a2a3a" stroke-width="5"/>
+          <path id="chainTop" d="M565 532L470 522" stroke="#2a2a3a" stroke-width="4" stroke-dasharray="7 5"/>
+          <path id="chainBot" d="M565 584L470 542" stroke="#2a2a3a" stroke-width="4" stroke-dasharray="7 5"/>
+          <path id="beam" d="M708 452L1012 506L1012 584L708 466Z" fill="url(#beamG)" opacity="0"/>
+          <g id="lampG">
+            <circle class="t" data-paint="frame2" cx="700" cy="458" r="9" stroke="#23222e" stroke-width="2"/>
+            <circle id="lampLens" cx="704" cy="458" r="5" fill="#ffd166"/>
+          </g>
+          <path class="t" data-paint="frame2" data-attr="stroke" d="M688 430C684 414 676 404 662 400L646 398" fill="none" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="646" cy="398" r="7" fill="#23222e"/>
+          <g id="basketG">
+            <path d="M706 438L690 430M758 438L700 432" stroke="#8a5a28" stroke-width="3"/>
+            <path d="M700 436L764 436L756 486L708 486Z" fill="#c98d4e" stroke="#8a5a28" stroke-width="3"/>
+            <path d="M703 449H761M705 461H759M707 473H757M718 437L716 485M732 437V486M746 437L748 485" stroke="#a06a32" stroke-width="2" opacity=".8"/>
+            <g id="fishTail">
+              <path d="M734 434C730 420 726 412 718 406L726 403C724 395 728 389 734 387C740 389 744 395 742 403L750 406C742 412 738 420 736 434Z" fill="#7ec8f0" stroke="#4a90c0" stroke-width="2"/>
+            </g>
+            <ellipse cx="732" cy="436" rx="32" ry="7" fill="#e0a860" stroke="#8a5a28" stroke-width="3"/>
+          </g>
+          <g transform="translate(565 558)">
+            <circle r="26" fill="none" stroke="#2a2a3a" stroke-width="6"/>
+            <circle r="9" fill="#2a2a3a"/>
+            <g id="crankA">
+              <path d="M0 0L42 0" stroke="#2a2a3a" stroke-width="9" stroke-linecap="round"/>
+              <g id="pedalA" transform="translate(42 0)">
+                <rect x="-17" y="-5" width="34" height="10" rx="4" fill="#23222e"/>
+                <circle cx="12" cy="0" r="2.4" fill="#ffb347"/>
+              </g>
+            </g>
+            <g id="crankB">
+              <path d="M0 0L42 0" stroke="#3a3a4c" stroke-width="9" stroke-linecap="round"/>
+              <g id="pedalB" transform="translate(42 0)">
+                <rect x="-17" y="-5" width="34" height="10" rx="4" fill="#33334a"/>
+              </g>
+            </g>
+          </g>
+          <g id="bellDome">
+            <path d="M668 398A8 8 0 0 1 684 398Z" fill="#ffd166" stroke="#b8860b" stroke-width="2"/>
+            <circle cx="676" cy="401" r="2.2" fill="#b8860b"/>
+          </g>
+        </g>
+
+        <path id="farFoot" class="t" data-paint="beak2" d="M0 0L24-5L30 1L23 4L28 8L19 8L22 12L7 8Z"/>
+
+        <g id="pelicanG">
+          <path id="tailEl" class="t" data-paint="body2" d="M468 300L416 278L432 308L406 314L434 332L420 352L462 350C456 332 458 314 468 300Z"/>
+          <path id="bodyEl" d="M462 336C450 296 478 262 528 256C578 250 614 272 622 312C630 352 612 394 566 410C520 426 478 414 464 382C456 364 456 352 462 336Z" fill="url(#bodyG)"/>
+          <g class="t" data-paint="body3" data-attr="stroke" fill="none" stroke-width="3" opacity=".55" stroke-linecap="round">
+            <path d="M486 300C510 318 540 322 566 314"/>
+            <path d="M482 326C508 344 542 348 570 338"/>
+            <path d="M490 352C514 366 544 368 566 360"/>
+          </g>
+          <path id="scarfT2" class="t" data-paint="scarf2"/>
+          <path id="scarfT1" class="t" data-paint="scarf"/>
+          <path id="neckEl" class="t" data-paint="body" data-attr="stroke" d="M584 296C592 258 610 232 636 220" fill="none" stroke-width="34" stroke-linecap="round"/>
+          <g id="headG">
+            <path class="t" data-paint="body2" d="M624 198L606 186L620 206L602 204L622 216Z"/>
+            <circle class="t" data-paint="body" cx="648" cy="212" r="30"/>
+            <ellipse id="eyePatch" class="t" data-paint="pouch" cx="655" cy="204" rx="11" ry="9" opacity=".55"/>
+            <path id="pouchEl" d="M668 222C700 258 752 260 802 219C756 232 706 230 668 226Z" fill="url(#pouchG)"/>
+            <path id="beakEl" d="M668 200C716 196 768 202 806 212C810 214 809 219 804 220C760 224 712 224 670 222C664 214 664 206 668 200Z" fill="url(#beakG)"/>
+            <path class="t" data-paint="beak2" data-attr="stroke" d="M676 208L700 208" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="656" cy="204" r="7.5" fill="#ffffff"/>
+            <circle cx="658" cy="205" r="3.6" fill="#23222e"/>
+            <circle cx="659.5" cy="203.5" r="1.3" fill="#ffffff"/>
+            <g id="helmetG">
+              <path class="t" data-paint="frame" d="M618 200C616 168 634 152 652 152C674 152 688 170 686 200C664 190 640 190 618 200Z"/>
+              <path d="M652 152C660 166 662 180 660 194L650 192C652 178 650 164 646 154Z" fill="#ffffff" opacity=".85"/>
+              <path class="t" data-paint="frame2" data-attr="stroke" d="M616 200C640 190 666 190 688 200" fill="none" stroke-width="5" stroke-linecap="round"/>
+              <path class="t" data-paint="frame2" data-attr="stroke" d="M630 204L640 232" stroke-width="3" opacity=".8"/>
+            </g>
+          </g>
+          <ellipse id="scarfRing" class="t" data-paint="scarf" cx="600" cy="282" rx="20" ry="12" transform="rotate(-25 600 282)"/>
+          <circle id="scarfKnot" class="t" data-paint="scarf2" cx="588" cy="288" r="8"/>
+          <path id="wingArm" class="t" data-paint="body2" d="M578 312C606 326 628 352 644 384L658 396C664 402 660 410 652 408L644 404C646 412 638 416 632 410L626 402C626 410 618 412 614 404L606 388C592 362 574 344 560 334Z"/>
+          <g class="t" data-paint="body3" data-attr="stroke" fill="none" stroke-width="2.5" stroke-linecap="round" opacity=".7">
+            <path d="M618 368L640 392"/>
+            <path d="M606 352L630 382"/>
+          </g>
+        </g>
+
+        <g id="nearLegG" fill="none" stroke-linecap="round">
+          <path id="nearThigh" class="t" data-paint="body2" data-attr="stroke" stroke-width="18"/>
+          <path id="nearShin" class="t" data-paint="beak" data-attr="stroke" stroke-width="11"/>
+        </g>
+        <path id="nearFoot" class="t" data-paint="beak" d="M0 0L26-5L32 1L25 4L30 9L20 9L23 13L7 9Z"/>
+
+        <g id="dustG" fill="#e8d3b8"></g>
+        <g id="fgG"></g>
+        <g id="gullsG" fill="none" stroke-linecap="round"></g>
+
+        <text id="bellNote" x="700" y="372" font-size="30" fill="#fff6e9" opacity="0" text-anchor="middle">叮～</text>
+        <rect width="1200" height="720" fill="url(#vigG)" pointer-events="none"/>
+      </svg>
+    </div>
+    <div class="hud">
+      <div class="chip">速度 <b id="hudSpeed">14</b> km/h</div>
+      <div class="chip">踏频 <b id="hudRpm">30</b> rpm</div>
+      <div class="chip">里程 <b id="hudDist">0</b> m</div>
+      <div class="hint">点击鹈鹕或车铃按铃 · 空格暂停 · ↑↓ 调速 · B 按铃</div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="sect">
+      <h2>骑行台</h2>
+      <div class="slider-row">
+        <div class="top"><label for="spd">骑行速度</label><output id="spdVal">1.0×</output></div>
+        <input type="range" id="spd" min="0" max="2.5" step="0.05" value="1">
+      </div>
+      <div class="slider-row">
+        <div class="top"><label for="bob">颠簸幅度</label><output id="bobVal">1.0</output></div>
+        <input type="range" id="bob" min="0" max="2" step="0.1" value="1">
+      </div>
+      <div class="btn-grid">
+        <button class="btn" id="pauseBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path id="pauseIcon" d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          <span id="pauseLabel">暂停</span>
+        </button>
+        <button class="btn" id="bellBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          按铃
+        </button>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2>涂装间</h2>
+      <div class="swatches">
+        <label class="swatch"><input type="color" id="cBody" value="#fff6e9"><span>羽毛</span></label>
+        <label class="swatch"><input type="color" id="cFrame" value="#0ea5b7"><span>车架</span></label>
+        <label class="swatch"><input type="color" id="cBeak" value="#ff9e2c"><span>大嘴</span></label>
+        <label class="swatch"><input type="color" id="cScarf" value="#e84855"><span>围巾</span></label>
+      </div>
+      <div class="row"><label>小头盔</label><button class="switch" id="swHelmet" role="switch" aria-checked="true" aria-label="小头盔"></button></div>
+      <div class="row"><label>车灯光束</label><button class="switch" id="swLamp" role="switch" aria-checked="false" aria-label="车灯光束"></button></div>
+    </div>
+
+    <div class="sect">
+      <h2>海岸场景</h2>
+      <div class="row" style="display:block">
+        <label for="theme" style="display:block;margin-bottom:6px">一天时刻</label>
+        <select id="theme">
+          <option value="sunset" selected>黄昏 · 橘子海</option>
+          <option value="noon">正午 · 玻璃蓝</option>
+          <option value="night">星夜 · 车灯巡航</option>
+          <option value="dawn">黎明 · 薄雾粉</option>
+        </select>
+      </div>
+      <div class="slider-row" style="margin-top:13px">
+        <div class="top"><label for="den">热闹程度</label><output id="denVal">6</output></div>
+        <input type="range" id="den" min="0" max="10" step="1" value="6">
+      </div>
+      <div class="row"><label>速度线</label><button class="switch" id="swLines" role="switch" aria-checked="true" aria-label="速度线"></button></div>
+    </div>
+
+    <div class="sect">
+      <h2>出片</h2>
+      <div class="btn-grid">
+        <button class="btn" id="randBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.4" fill="currentColor" stroke="none"/></svg>
+          随机搭配
+        </button>
+        <button class="btn" id="resetBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          重置
+        </button>
+        <button class="btn primary" id="dlSvgBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg>
+          下载当前画面 SVG
+        </button>
+        <button class="btn" id="cpSvgBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          复制 SVG 代码
+        </button>
+        <button class="btn" id="dlPngBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          下载 PNG
+        </button>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>一只鹈鹕，一辆车，一条没有尽头的海岸线。</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var scene = document.getElementById("scene");
+  function $(id){ return document.getElementById(id); }
+  function mk(tag, attrs, parent){
+    var el = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function hexRgb(h){
+    h = h.replace("#","");
+    if (h.length===3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var n = parseInt(h,16);
+    return [(n>>16)&255,(n>>8)&255,n&255];
+  }
+  function mix(h1,h2,f){
+    var a=hexRgb(h1), b=hexRgb(h2), o="#";
+    for (var i=0;i<3;i++){
+      var v=Math.round(a[i]+(b[i]-a[i])*f).toString(16);
+      o += v.length<2 ? "0"+v : v;
+    }
+    return o;
+  }
+
+  var THEMES = {
+    sunset:{sky:["#3a2a63","#b4507a","#ff9e5e"],sea:["#c86a80","#5a3a6e"],road:["#6a4a68","#413050"],wave:"#ffd9a0",cloud:"#ffd9c0",fg:"#2a1a3a",sun:"#ffd166",glow:"#ff9e5e",sunOp:1,moonOp:0,starsOp:0},
+    noon:{sky:["#2f7fd0","#7ec8f0","#cfeef8"],sea:["#1a9ab8","#0e6a8a"],road:["#7a8a98","#54626e"],wave:"#eafcff",cloud:"#ffffff",fg:"#1a3a4a",sun:"#fff3b0",glow:"#ffe98a",sunOp:1,moonOp:0,starsOp:0},
+    night:{sky:["#0a1030","#1a2450","#2a3468"],sea:["#16224a","#0a1228"],road:["#2a3048","#181c2e"],wave:"#5a6aae",cloud:"#3a4468",fg:"#060a18",sun:"#ffd166",glow:"#5a6aae",sunOp:0,moonOp:1,starsOp:1},
+    dawn:{sky:["#4a3a7e","#e88aa0","#ffd9a8"],sea:["#9a7ab0","#4a4a7e"],road:["#6a5a72","#4a4058"],wave:"#ffe0c0",cloud:"#ffe4d0",fg:"#3a2a4a",sun:"#ffe9c0",glow:"#ffb98a",sunOp:1,moonOp:0,starsOp:0}
+  };
+  var DEFAULTS = {
+    speed:1, bob:1, theme:"sunset", density:6,
+    body:"#fff6e9", frame:"#0ea5b7", beak:"#ff9e2c", scarf:"#e84855",
+    helmet:true, lamp:false, lines:true, paused:false, sound:true
+  };
+  var state = Object.assign({}, DEFAULTS);
+
+  var BB = {x:565, y:558}, CRANK = 42, L1 = 106, L2 = 112;
+  var HIP_N = {x:548, y:404}, HIP_F = {x:540, y:408};
+  var palette = {};
+
+  function computePalette(){
+    var th = THEMES[state.theme];
+    palette = {
+      body:state.body, body2:mix(state.body,"#7a5c3e",.28), body3:mix(state.body,"#7a5c3e",.52),
+      frame:state.frame, frame2:mix(state.frame,"#102030",.42),
+      beak:state.beak, beak2:mix(state.beak,"#7a3a10",.38), pouch:mix(state.beak,"#ffffff",.45),
+      scarf:state.scarf, scarf2:mix(state.scarf,"#5a1020",.38),
+      cloud:th.cloud, fg:th.fg, wave:th.wave, sun:th.sun
+    };
+  }
+
+  function paintAll(){
+    computePalette();
+    var th = THEMES[state.theme];
+    var stops = {skyS1:th.sky[0],skyS2:th.sky[1],skyS3:th.sky[2],seaS1:th.sea[0],seaS2:th.sea[1],
+      roadS1:th.road[0],roadS2:th.road[1],glowS1:th.glow,glowS2:th.glow,
+      bodyS1:palette.body,bodyS2:palette.body2,beakS1:mix(state.beak,"#ffffff",.25),beakS2:palette.beak,
+      pouchS1:palette.pouch,pouchS2:palette.beak};
+    for (var id in stops) $(id).style.stopColor = stops[id];
+    var painted = scene.querySelectorAll("[data-paint]");
+    for (var i=0;i<painted.length;i++){
+      var el = painted[i], c = palette[el.getAttribute("data-paint")];
+      if (!c) continue;
+      if (el.getAttribute("data-attr")==="stroke") el.style.stroke = c; else el.style.fill = c;
+    }
+    $("sunDisc").style.fill = th.sun;
+    var rays = $("sunRays").children;
+    for (var r=0;r<rays.length;r++) rays[r].style.stroke = th.sun;
+    $("sunG").style.opacity = th.sunOp;
+    $("moonG").style.opacity = th.moonOp;
+    $("starsG").style.opacity = th.starsOp;
+    $("helmetG").style.display = state.helmet ? "" : "none";
+  }
+
+  /* ---------- 静态布景 ---------- */
+  (function buildSunRays(){
+    var g = $("sunRays");
+    for (var i=0;i<12;i++){
+      var a = i*Math.PI/6;
+      mk("line",{x1:955+Math.cos(a)*72,y1:148+Math.sin(a)*72,x2:955+Math.cos(a)*92,y2:148+Math.sin(a)*92,"stroke-width":4,"stroke-linecap":"round"},g);
+    }
+  })();
+  (function buildStars(){
+    var g = $("starsG");
+    for (var i=0;i<44;i++){
+      mk("circle",{cx:rand(0,1200).toFixed(1),cy:rand(14,380).toFixed(1),r:rand(.8,1.9).toFixed(2),fill:"#ffffff"},g);
+    }
+  })();
+  (function buildWaves(){
+    var g = $("wavesG");
+    for (var i=0;i<3;i++){
+      var d="M0 "+(505+i*40), base=505+i*40, amp=4+i;
+      for (var x=25;x<=2700;x+=25) d += " L"+x+" "+(base+Math.sin(x/300*Math.PI*2)*amp).toFixed(1);
+      var p = mk("path",{d:d,"class":"t","data-paint":"wave","data-attr":"stroke","stroke-width":3+i*.5,opacity:(.5-i*.12).toFixed(2)},g);
+      p._base = base;
+    }
+  })();
+  (function buildDashes(){
+    var g = $("dashesG");
+    for (var x=0;x<1400;x+=100){
+      mk("rect",{x:x,y:666,width:54,height:6,rx:3,"class":"t","data-paint":"cloud",opacity:.7},g);
+    }
+  })();
+
+  /* ---------- 动态布景（可调密度） ---------- */
+  var clouds=[], gulls=[], sparkles=[], boats=[], speedLines=[], fgItems=[];
+  function buildScenery(){
+    var cg=$("cloudsG"), gg=$("gullsG"), sg=$("sparklesG"), bg=$("boatsG"), fg=$("fgG"), lg=$("speedG");
+    cg.textContent=""; gg.textContent=""; sg.textContent=""; bg.textContent=""; fg.textContent=""; lg.textContent="";
+    clouds=[]; gulls=[]; sparkles=[]; boats=[]; speedLines=[]; fgItems=[];
+    var d = state.density, i, g;
+    var nCloud = 2+Math.round(d*.6);
+    for (i=0;i<nCloud;i++){
+      g = mk("g",{"class":"t","data-paint":"cloud",opacity:.92},cg);
+      mk("ellipse",{cx:0,cy:0,rx:46,ry:22},g);
+      mk("ellipse",{cx:34,cy:-12,rx:36,ry:18},g);
+      mk("ellipse",{cx:-36,cy:-8,rx:32,ry:16},g);
+      mk("ellipse",{cx:10,cy:8,rx:50,ry:18},g);
+      clouds.push({el:g,x:rand(-200,1400),y:rand(56,230),s:rand(.55,1.3),p:rand(.12,.3)});
+    }
+    var nGull = Math.round(d*.5);
+    for (i=0;i<nGull;i++){
+      var gp = mk("path",{d:"M-16 0Q-8 -10 0 0Q8 -10 16 0","class":"t","data-paint":"fg","data-attr":"stroke","stroke-width":3},gg);
+      gulls.push({el:gp,x:rand(0,1200),y:rand(110,270),ph:rand(0,6),s:rand(.7,1.2)});
+    }
+    var nSpark = d*2;
+    for (i=0;i<nSpark;i++){
+      var sp = mk("path",{d:"M-4 0H4M0 -4V4","class":"t","data-paint":"wave","data-attr":"stroke","stroke-width":2},sg);
+      sparkles.push({el:sp,x:rand(0,1200),y:rand(482,598),ph:rand(0,6)});
+    }
+    for (i=0;i<2;i++){
+      g = mk("g",{},bg);
+      mk("path",{d:"M-22 0L22 0L14 10L-14 10Z","class":"t","data-paint":"fg"},g);
+      mk("line",{x1:0,y1:0,x2:0,y2:-34,"class":"t","data-paint":"fg","data-attr":"stroke","stroke-width":2},g);
+      mk("path",{d:"M2 -32L2 -2L24 -2Z","class":"t","data-paint":"cloud",opacity:.95},g);
+      mk("path",{d:"M-2 -28L-2 -2L-18 -2Z","class":"t","data-paint":"cloud",opacity:.8},g);
+      boats.push({el:g,x:rand(100,1100),y:484+i*8,s:i?1.05:.75,ph:rand(0,6)});
+    }
+    for (i=0;i<7;i++){
+      var ln = mk("line",{x1:0,y1:0,x2:rand(60,150),y2:0,"stroke-width":4},lg);
+      speedLines.push({el:ln,x:rand(0,1300),y:rand(280,580)});
+    }
+    for (i=0;i<16;i++){
+      var tx = i*170+rand(-30,30);
+      var tuft = mk("path",{d:"M0 0C-2 -14 -6 -22 -12 -28C-4 -24 -2 -16 0 -8C2 -18 6 -26 14 -30C8 -22 4 -14 2 -6C6 -12 12 -16 20 -16C12 -10 6 -4 4 0Z","class":"t","data-paint":"fg",transform:"translate("+tx+" 718) scale("+rand(.8,1.5).toFixed(2)+")"},fg);
+      fgItems.push(tuft);
+    }
+    [300,1660].forEach(function(px){
+      var palm = mk("g",{transform:"translate("+px+" 720)"},fg);
+      mk("path",{d:"M0 0C4 -44 10 -88 6 -132",fill:"none","class":"t","data-paint":"fg","data-attr":"stroke","stroke-width":11,"stroke-linecap":"round"},palm);
+      var fronds = mk("g",{"class":"t","data-paint":"fg",transform:"translate(6 -132)"},palm);
+      ["M0 0C-26 -22 -52 -24 -74 -12C-48 -8 -24 -4 0 4Z",
+       "M0 0C-14 -30 -34 -40 -58 -38C-36 -26 -16 -14 2 -2Z",
+       "M0 0C2 -34 -6 -52 -24 -60C-12 -40 -6 -22 2 -2Z",
+       "M0 0C16 -28 38 -38 62 -34C40 -24 20 -12 2 0Z",
+       "M0 0C28 -18 54 -18 76 -6C50 -4 26 0 2 6Z"].forEach(function(fd){ mk("path",{d:fd},fronds); });
+      fgItems.push(palm);
+    });
+    paintAll();
+  }
+
+  /* ---------- 腿部 IK / 围巾 ---------- */
+  function solveLeg(hip, target){
+    var dx=target.x-hip.x, dy=target.y-hip.y;
+    var d=Math.sqrt(dx*dx+dy*dy);
+    d=clamp(d, Math.abs(L1-L2)+1, L1+L2-1);
+    var ux=dx/d, uy=dy/d;
+    var a=(L1*L1-L2*L2+d*d)/(2*d);
+    var h=Math.sqrt(Math.max(L1*L1-a*a,0));
+    var knee={x:hip.x+ux*a+uy*h, y:hip.y+uy*a-ux*h};
+    return knee;
+  }
+  function ribbonPath(pts, w0, w1){
+    var n=pts.length, top=[], bot=[];
+    for (var i=0;i<n;i++){
+      var p=pts[i];
+      var q=pts[Math.min(i+1,n-1)], r=pts[Math.max(i-1,0)];
+      var dx=q.x-r.x, dy=q.y-r.y, len=Math.sqrt(dx*dx+dy*dy)||1;
+      var w=(w0+(w1-w0)*i/(n-1))/2;
+      var nx=-dy/len*w, ny=dx/len*w;
+      top.push((p.x+nx).toFixed(1)+" "+(p.y+ny).toFixed(1));
+      bot.push((p.x-nx).toFixed(1)+" "+(p.y-ny).toFixed(1));
+    }
+    return "M"+top.join("L")+"L"+bot.reverse().join("L")+"Z";
+  }
+
+  /* ---------- 声音 ---------- */
+  var actx=null;
+  function ensureAudio(){
+    if (!actx){
+      try { actx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){}
+    }
+    if (actx && actx.state==="suspended") actx.resume();
+  }
+  function bellSound(){
+    if (!state.sound || !actx) return;
+    var t0=actx.currentTime;
+    [880,1318,1760].forEach(function(f,i){
+      var o=actx.createOscillator(), g=actx.createGain();
+      o.type="sine"; o.frequency.value=f;
+      g.gain.setValueAtTime(.18/(i+1),t0);
+      g.gain.exponentialRampToValueAtTime(.0001,t0+.9+i*.1);
+      o.connect(g); g.connect(actx.destination);
+      o.start(t0); o.stop(t0+1.1);
+    });
+  }
+  function tickSound(){
+    if (!state.sound || !actx) return;
+    var t0=actx.currentTime;
+    var o=actx.createOscillator(), g=actx.createGain();
+    o.type="square"; o.frequency.value=2100;
+    g.gain.setValueAtTime(.022,t0);
+    g.gain.exponentialRampToValueAtTime(.0001,t0+.04);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t0); o.stop(t0+.05);
+  }
+  window.addEventListener("pointerdown", function once(){
+    ensureAudio();
+    window.removeEventListener("pointerdown", once);
+  });
+
+  /* ---------- 交互状态 ---------- */
+  var bellT=99, dust=[], dustTimer=0, lastHalf=0;
+  function ringBell(){
+    ensureAudio(); bellSound(); bellT=0;
+  }
+  $("bellBtn").addEventListener("click", ringBell);
+  $("bellDome").addEventListener("click", ringBell);
+  $("pelicanG").addEventListener("click", ringBell);
+
+  var toastTimer=null;
+  function toast(msg){
+    var t=$("toast");
+    t.textContent=msg; t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){ t.classList.remove("show"); },1800);
+  }
+
+  /* ---------- 主循环 ---------- */
+  var t=0, wheelDeg=0, distance=0, last=performance.now(), hudTimer=0;
+  var waveX=[0,0,0], dashX=0, fgX=0, chainOff=0;
+  var dustG=$("dustG");
+
+  function frame(now){
+    var dt=Math.min((now-last)/1000,.05); last=now;
+    var sdt=state.paused?0:dt;
+    t+=sdt;
+    var spd=state.speed;
+    var dWheel=spd*360*sdt;
+    wheelDeg=(wheelDeg+dWheel)%360;
+    var crankDeg=wheelDeg*.5, crank=crankDeg*Math.PI/180;
+    distance+=spd*3.2*sdt;
+    chainOff-=dWheel*.12;
+
+    $("wheelRSpin").setAttribute("transform","rotate("+wheelDeg.toFixed(2)+")");
+    $("wheelFSpin").setAttribute("transform","rotate("+wheelDeg.toFixed(2)+")");
+    $("crankA").setAttribute("transform","rotate("+crankDeg.toFixed(2)+")");
+    $("crankB").setAttribute("transform","rotate("+(crankDeg+180).toFixed(2)+")");
+    $("pedalA").setAttribute("transform","translate(42 0) rotate("+(-crankDeg).toFixed(2)+")");
+    $("pedalB").setAttribute("transform","translate(42 0) rotate("+(-crankDeg-180).toFixed(2)+")");
+    $("chainTop").style.strokeDashoffset=chainOff;
+    $("chainBot").style.strokeDashoffset=-chainOff;
+
+    var half=Math.floor(crankDeg/180);
+    if (half!==lastHalf){ lastHalf=half; if (spd>.15 && !state.paused) tickSound(); }
+
+    var bob=(Math.sin(crank*2)*2.6+Math.sin(t*1.3)*1.1)*state.bob*Math.min(spd+.35,1.4);
+    $("pelicanG").setAttribute("transform","translate(0 "+bob.toFixed(2)+") rotate("+(Math.sin(crank*2)*.5*state.bob).toFixed(2)+" 560 400)");
+    $("headG").setAttribute("transform","rotate("+(Math.sin(crank*2+.6)*1.7*Math.min(spd,1.4)).toFixed(2)+" 600 290)");
+    $("shadowEl").setAttribute("rx",(205-bob*2).toFixed(1));
+
+    var pN={x:BB.x+Math.cos(crank)*CRANK, y:BB.y+Math.sin(crank)*CRANK};
+    var pF={x:BB.x-Math.cos(crank)*CRANK, y:BB.y-Math.sin(crank)*CRANK};
+    var hipN={x:HIP_N.x,y:HIP_N.y+bob}, hipF={x:HIP_F.x,y:HIP_F.y+bob};
+    var ankN={x:pN.x,y:pN.y-5}, ankF={x:pF.x,y:pF.y-5};
+    var kneeN=solveLeg(hipN,ankN), kneeF=solveLeg(hipF,ankF);
+    $("nearThigh").setAttribute("d","M"+hipN.x+" "+hipN.y.toFixed(1)+"L"+kneeN.x.toFixed(1)+" "+kneeN.y.toFixed(1));
+    $("nearShin").setAttribute("d","M"+kneeN.x.toFixed(1)+" "+kneeN.y.toFixed(1)+"L"+ankN.x+" "+ankN.y.toFixed(1));
+    $("farThigh").setAttribute("d","M"+hipF.x+" "+hipF.y.toFixed(1)+"L"+kneeF.x.toFixed(1)+" "+kneeF.y.toFixed(1));
+    $("farShin").setAttribute("d","M"+kneeF.x.toFixed(1)+" "+kneeF.y.toFixed(1)+"L"+ankF.x+" "+ankF.y.toFixed(1));
+    var angN=Math.atan2(ankN.y-kneeN.y,ankN.x-kneeN.x)*180/Math.PI;
+    var angF=Math.atan2(ankF.y-kneeF.y,ankF.x-kneeF.x)*180/Math.PI;
+    $("nearFoot").setAttribute("transform","translate("+ankN.x+" "+ankN.y.toFixed(1)+") rotate("+(angN*.15).toFixed(1)+")");
+    $("farFoot").setAttribute("transform","translate("+ankF.x+" "+ankF.y.toFixed(1)+") rotate("+(angF*.15).toFixed(1)+")");
+
+    var w=5+Math.sin(t*7)*2.2*Math.min(spd,1.5)+Math.sin(crank*2)*2;
+    $("pouchEl").setAttribute("d","M668 222C700 "+(252+w).toFixed(1)+" 752 "+(254+w*.7).toFixed(1)+" 802 219C756 232 706 230 668 226Z");
+
+    var flut=.5+spd*.5, pts1=[], pts2=[];
+    for (var i=0;i<6;i++){
+      pts1.push({x:586-i*26, y:292+i*3+Math.sin(t*5-i*.85)*(2+i*2.4)*flut});
+      pts2.push({x:584-i*21, y:296+i*4+Math.sin(t*5-i*.85+1.6)*(2+i*2)*flut});
+    }
+    $("scarfT1").setAttribute("d",ribbonPath(pts1,14,4));
+    $("scarfT2").setAttribute("d",ribbonPath(pts2,10,3));
+    $("fishTail").setAttribute("transform","rotate("+(Math.sin(t*3)*8).toFixed(1)+" 734 434)");
+    $("sunRays").setAttribute("transform","rotate("+(t*6%360).toFixed(2)+" 955 148)");
+
+    var j, it;
+    for (j=0;j<clouds.length;j++){
+      it=clouds[j]; it.x-=(8+spd*22)*it.p*sdt;
+      if (it.x<-260) it.x=1460;
+      it.el.setAttribute("transform","translate("+it.x.toFixed(1)+" "+it.y+") scale("+it.s+")");
+    }
+    for (j=0;j<gulls.length;j++){
+      it=gulls[j]; it.x-=(18+spd*12)*sdt;
+      if (it.x<-60) it.x=1260;
+      var flap=.3+Math.abs(Math.sin(t*6+it.ph))*.9;
+      it.el.setAttribute("transform","translate("+it.x.toFixed(1)+" "+(it.y+Math.sin(t*2+it.ph)*5).toFixed(1)+") scale("+it.s+" "+(it.s*flap).toFixed(2)+")");
+    }
+    for (j=0;j<sparkles.length;j++){
+      it=sparkles[j];
+      it.el.setAttribute("transform","translate("+it.x+" "+it.y+")");
+      it.el.style.opacity=(.15+.85*Math.abs(Math.sin(t*2+it.ph))).toFixed(2);
+    }
+    for (j=0;j<boats.length;j++){
+      it=boats[j]; it.x-=6*sdt;
+      if (it.x<-80) it.x=1280;
+      it.el.setAttribute("transform","translate("+it.x.toFixed(1)+" "+(it.y+Math.sin(t*1.2+it.ph)*2).toFixed(1)+") rotate("+(Math.sin(t*1.2+it.ph)*2).toFixed(1)+") scale("+it.s+")");
+    }
+    var wp=$("wavesG").children;
+    for (j=0;j<wp.length;j++){
+      waveX[j]=(waveX[j]+spd*(26+j*10)*sdt)%300;
+      wp[j].setAttribute("transform","translate("+(-waveX[j]).toFixed(1)+" 0)");
+    }
+    dashX=(dashX+spd*240*sdt)%100;
+    $("dashesG").setAttribute("transform","translate("+(-dashX).toFixed(1)+" 0)");
+    fgX=(fgX+spd*300*sdt)%1360;
+    $("fgG").setAttribute("transform","translate("+(-fgX).toFixed(1)+" 0)");
+
+    var lineOp=state.lines?clamp((spd-.9)/1.6,0,1)*.45:0;
+    $("speedG").style.opacity=lineOp.toFixed(2);
+    if (lineOp>0){
+      for (j=0;j<speedLines.length;j++){
+        it=speedLines[j]; it.x-=(300+spd*260)*sdt;
+        if (it.x<-200){ it.x=1300; it.y=rand(280,580); }
+        it.el.setAttribute("transform","translate("+it.x.toFixed(1)+" "+it.y+")");
+      }
+    }
+
+    dustTimer+=sdt*spd;
+    if (spd>.5 && dustTimer>.14 && dust.length<26){
+      dustTimer=0;
+      var dc=mk("circle",{cx:0,cy:0,r:rand(3,7).toFixed(1),opacity:.3},dustG);
+      dust.push({el:dc,x:468+rand(-8,8),y:604,vx:-40-rand(0,40),vy:-12-rand(0,26),life:0,max:rand(.5,.8)});
+    }
+    for (j=dust.length-1;j>=0;j--){
+      it=dust[j]; it.life+=sdt;
+      if (it.life>=it.max){ it.el.remove(); dust.splice(j,1); continue; }
+      it.x+=it.vx*sdt; it.y+=it.vy*sdt;
+      var k=it.life/it.max;
+      it.el.setAttribute("cx",it.x.toFixed(1));
+      it.el.setAttribute("cy",it.y.toFixed(1));
+      it.el.setAttribute("r",(parseFloat(it.el.getAttribute("r"))+sdt*8).toFixed(1));
+      it.el.setAttribute("opacity",((1-k)*.3).toFixed(2));
+    }
+
+    var stars=$("starsG").children;
+    if (THEMES[state.theme].starsOp>0){
+      for (j=0;j<stars.length;j++) stars[j].style.opacity=(.3+.7*Math.abs(Math.sin(t*1.5+j*2))).toFixed(2);
+    }
+    $("beam").style.opacity=state.lamp?(.55+.06*Math.sin(t*9)).toFixed(2):0;
+    $("lampLens").style.fill=state.lamp?"#ffe9a0":"#caa64e";
+
+    bellT+=sdt;
+    var bn=$("bellNote");
+    if (bellT<1.2){
+      bn.setAttribute("opacity",(1-bellT/1.2).toFixed(2));
+      bn.setAttribute("y",(372-bellT*42).toFixed(1));
+    } else bn.setAttribute("opacity",0);
+
+    hudTimer+=dt;
+    if (hudTimer>.18){
+      hudTimer=0;
+      $("hudSpeed").textContent=Math.round(spd*14);
+      $("hudRpm").textContent=Math.round(spd*30);
+      $("hudDist").textContent=Math.round(distance);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- 控件 ---------- */
+  function sliderFill(input){
+    var p=(input.value-input.min)/(input.max-input.min)*100;
+    input.style.setProperty("--p",p+"%");
+  }
+  function bindSlider(id, key, fmt, after){
+    var el=$(id), out=$(id+"Val");
+    el.addEventListener("input",function(){
+      state[key]=parseFloat(el.value);
+      out.textContent=fmt(state[key]);
+      sliderFill(el);
+      if (after) after();
+    });
+  }
+  bindSlider("spd","speed",function(v){return v.toFixed(1)+"×";});
+  bindSlider("bob","bob",function(v){return v.toFixed(1);});
+  bindSlider("den","density",function(v){return String(Math.round(v));},buildScenery);
+
+  function bindColor(id,key){
+    $(id).addEventListener("input",function(){ state[key]=$(id).value; paintAll(); });
+  }
+  bindColor("cBody","body"); bindColor("cFrame","frame"); bindColor("cBeak","beak"); bindColor("cScarf","scarf");
+
+  function bindSwitch(id,key,after){
+    $(id).addEventListener("click",function(){
+      state[key]=!state[key];
+      $(id).setAttribute("aria-checked",state[key]);
+      if (after) after();
+    });
+  }
+  bindSwitch("swHelmet","helmet",paintAll);
+  bindSwitch("swLamp","lamp");
+  bindSwitch("swLines","lines");
+
+  $("theme").addEventListener("change",function(){
+    state.theme=$("theme").value;
+    state.lamp=(state.theme==="night");
+    $("swLamp").setAttribute("aria-checked",state.lamp);
+    paintAll();
+  });
+
+  function setPaused(p){
+    state.paused=p;
+    $("pauseLabel").textContent=p?"继续":"暂停";
+    $("pauseIcon").setAttribute("d",p?"M7 4l13 8-13 8z":"M6 4h4v16H6zM14 4h4v16h-4z");
+  }
+  $("pauseBtn").addEventListener("click",function(){ setPaused(!state.paused); });
+
+  $("soundBtn").addEventListener("click",function(){
+    state.sound=!state.sound;
+    if (state.sound) ensureAudio();
+    $("soundBtn").setAttribute("aria-pressed",state.sound);
+    $("soundLabel").textContent=state.sound?"声音：开":"声音：关";
+  });
+
+  window.addEventListener("keydown",function(e){
+    var tag=(e.target.tagName||"").toLowerCase();
+    if (tag==="input"||tag==="select"||tag==="textarea") return;
+    if (e.code==="Space"){ e.preventDefault(); setPaused(!state.paused); }
+    else if (e.key==="ArrowUp"){ state.speed=clamp(state.speed+.1,0,2.5); syncUI(); }
+    else if (e.key==="ArrowDown"){ state.speed=clamp(state.speed-.1,0,2.5); syncUI(); }
+    else if (e.key==="b"||e.key==="B"){ ringBell(); }
+  });
+
+  var RAND = {
+    body:["#fff6e9","#f6e7d8","#eef2f5","#ffe9f0"],
+    frame:["#0ea5b7","#e84855","#7c5cff","#2fbf71","#ff8c42","#f2c14e"],
+    beak:["#ff9e2c","#ff7b54","#ffb703","#fb8500"],
+    scarf:["#e84855","#7c5cff","#0ea5b7","#2fbf71","#ff5d8f"]
+  };
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  $("randBtn").addEventListener("click",function(){
+    state.body=pick(RAND.body); state.frame=pick(RAND.frame);
+    state.beak=pick(RAND.beak); state.scarf=pick(RAND.scarf);
+    state.theme=pick(Object.keys(THEMES));
+    state.speed=rand(.6,2.1); state.bob=rand(.4,1.8); state.density=Math.round(rand(3,9));
+    state.helmet=Math.random()<.7; state.lines=Math.random()<.7;
+    state.lamp=(state.theme==="night");
+    buildScenery(); syncUI(); toast("已随机搭配一套新造型");
+  });
+  $("resetBtn").addEventListener("click",function(){
+    Object.assign(state,DEFAULTS);
+    setPaused(false);
+    buildScenery(); syncUI(); toast("已回到最初的模样");
+  });
+
+  function syncUI(){
+    $("spd").value=state.speed; $("spdVal").textContent=state.speed.toFixed(1)+"×";
+    $("bob").value=state.bob; $("bobVal").textContent=state.bob.toFixed(1);
+    $("den").value=state.density; $("denVal").textContent=state.density;
+    ["spd","bob","den"].forEach(function(id){ sliderFill($(id)); });
+    $("cBody").value=state.body; $("cFrame").value=state.frame;
+    $("cBeak").value=state.beak; $("cScarf").value=state.scarf;
+    $("theme").value=state.theme;
+    $("swHelmet").setAttribute("aria-checked",state.helmet);
+    $("swLamp").setAttribute("aria-checked",state.lamp);
+    $("swLines").setAttribute("aria-checked",state.lines);
+    $("soundBtn").setAttribute("aria-pressed",state.sound);
+    $("soundLabel").textContent=state.sound?"声音：开":"声音：关";
+    paintAll();
+  }
+
+  /* ---------- 导出 ---------- */
+  function svgText(){
+    var clone=scene.cloneNode(true);
+    clone.setAttribute("xmlns",SVGNS);
+    clone.setAttribute("width","1200");
+    clone.setAttribute("height","720");
+    return '<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(clone);
+  }
+  function download(blob,name){
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); },4000);
+  }
+  $("dlSvgBtn").addEventListener("click",function(){
+    download(new Blob([svgText()],{type:"image/svg+xml;charset=utf-8"}),"pelican-ride.svg");
+    toast("SVG 已导出（当前姿态）");
+  });
+  $("cpSvgBtn").addEventListener("click",function(){
+    var txt=svgText();
+    function fallback(){
+      var ta=document.createElement("textarea");
+      ta.value=txt; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); toast("SVG 代码已复制"); }
+      catch(e){ toast("复制失败，请使用下载"); }
+      ta.remove();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ toast("SVG 代码已复制"); },fallback);
+    } else fallback();
+  });
+  $("dlPngBtn").addEventListener("click",function(){
+    var url=URL.createObjectURL(new Blob([svgText()],{type:"image/svg+xml;charset=utf-8"}));
+    var img=new Image();
+    img.onload=function(){
+      var cv=document.createElement("canvas");
+      cv.width=2400; cv.height=1440;
+      cv.getContext("2d").drawImage(img,0,0,2400,1440);
+      URL.revokeObjectURL(url);
+      cv.toBlob(function(b){
+        if (b){ download(b,"pelican-ride.png"); toast("PNG 已导出 2400×1440"); }
+        else toast("PNG 导出失败，请改用 SVG");
+      },"image/png");
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); toast("PNG 导出失败，请改用 SVG"); };
+    img.src=url;
+  });
+
+  /* ---------- 启动 ---------- */
+  buildScenery();
+  syncUI();
+  setPaused(false);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

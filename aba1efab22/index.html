@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鹈鹕骑行记 · Pelican Rider</title>
+<style>
+/* ============================================================
+   鹈鹕骑行记 · PELICAN RIDER
+   Seaside boardwalk palette: deep ocean teal fields, coral &
+   amber accents, magenta dusk, warm sand neutrals.
+   ============================================================ */
+:root{
+  --bg:#081722;
+  --surface:#0e2334;
+  --surface-2:#143049;
+  --overlay:#1a3a55;
+  --line:rgba(72,201,190,.18);
+  --line-strong:rgba(72,201,190,.38);
+  --ink:#f3e9d6;
+  --muted:#9db4c0;
+  --faint:#6d8494;
+  --coral:#ff5a4e;
+  --coral-deep:#d63a30;
+  --amber:#ffb347;
+  --teal:#2ec4b6;
+  --magenta:#e84f9b;
+  --info:#4cc9f0;
+  --success:#3ddc84;
+  --warning:#ffb347;
+  --danger:#ff5a4e;
+  --scrim:rgba(4,10,18,.62);
+  --radius:14px;
+  --font-body:'Noto Sans SC',system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  --font-disp:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;
+  --font-latin:'Fraunces',Georgia,serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--font-body);
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 600px at 85% -10%, rgba(46,196,182,.10), transparent 60%),
+    radial-gradient(900px 700px at -10% 110%, rgba(232,79,155,.08), transparent 60%),
+    var(--bg);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+#app{
+  height:100dvh;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 324px;
+  grid-template-rows:auto minmax(0,1fr);
+  grid-template-areas:"top top" "stage dock";
+}
+
+/* ---------- top bar ---------- */
+#topbar{
+  grid-area:top;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:10px 20px;
+  background:linear-gradient(180deg, rgba(20,48,73,.92), rgba(14,35,52,.88));
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  position:relative;z-index:20;
+}
+#topbar::after{
+  content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;
+  background:linear-gradient(90deg,var(--teal),var(--info) 30%,var(--amber) 62%,var(--coral) 85%,var(--magenta));
+  opacity:.85;pointer-events:none;
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{
+  width:42px;height:42px;flex:none;border-radius:12px;
+  background:linear-gradient(140deg,var(--surface-2),var(--overlay));
+  border:1px solid var(--line-strong);
+  display:grid;place-items:center;
+  box-shadow:0 4px 18px rgba(46,196,182,.18), inset 0 1px 0 rgba(243,233,214,.08);
+}
+.brand h1{
+  font-family:var(--font-disp);font-weight:400;font-size:22px;line-height:1.1;
+  background:linear-gradient(92deg,var(--amber),var(--coral) 70%,var(--magenta));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  letter-spacing:1px;white-space:nowrap;
+}
+.brand .sub{
+  font-family:var(--font-latin);font-size:10.5px;letter-spacing:3.5px;
+  color:var(--muted);text-transform:uppercase;white-space:nowrap;
+}
+.top-actions{display:flex;gap:10px;align-items:center}
+.icon-btn{
+  font-family:var(--font-body);font-size:13px;font-weight:500;color:var(--ink);
+  background:linear-gradient(160deg,var(--surface-2),var(--surface));
+  border:1px solid var(--line-strong);border-radius:11px;
+  padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+  transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease, background .2s;
+  white-space:nowrap;
+}
+.icon-btn:hover{transform:translateY(-1px);border-color:var(--amber);box-shadow:0 6px 18px rgba(255,179,71,.22)}
+.icon-btn:active{transform:translateY(0) scale(.97)}
+.icon-btn[aria-pressed="false"]{color:var(--muted);border-color:var(--line)}
+.icon-btn .dot{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success)}
+.icon-btn[aria-pressed="false"] .dot{background:var(--faint);box-shadow:none}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:8px}
+
+/* ---------- stage ---------- */
+#stage{grid-area:stage;position:relative;min-width:0;min-height:0;overflow:hidden;background:#0a1a2a}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+#bellHit{cursor:pointer}
+.hud{
+  position:absolute;left:16px;bottom:14px;display:flex;gap:8px;flex-wrap:wrap;z-index:5;
+  pointer-events:none;
+}
+.chip{
+  display:inline-flex;align-items:baseline;gap:7px;
+  background:var(--scrim);border:1px solid var(--line);
+  border-radius:999px;padding:6px 13px;
+  backdrop-filter:blur(8px);
+  font-size:12px;color:var(--muted);
+  box-shadow:0 4px 14px rgba(0,0,0,.25);
+}
+.chip b{
+  font-family:var(--font-latin);font-weight:800;font-size:15px;color:var(--ink);
+  font-variant-numeric:tabular-nums;letter-spacing:.3px;
+}
+.chip .u{font-size:10.5px;color:var(--faint)}
+.chip.speed b{color:var(--amber)} .chip.dist b{color:var(--teal)} .chip.cad b{color:var(--magenta)}
+#timeChip{
+  position:absolute;top:14px;left:16px;z-index:5;pointer-events:none;
+  background:var(--scrim);border:1px solid var(--line);border-radius:999px;
+  padding:7px 15px;font-size:13px;color:var(--ink);backdrop-filter:blur(8px);
+  display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.25);
+}
+#timeChip .tlabel{font-weight:700;letter-spacing:1px}
+#timeChip .tsub{font-family:var(--font-latin);font-size:10px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase}
+#pauseChip{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-8px);z-index:6;
+  background:var(--scrim);border:1px solid var(--amber);border-radius:999px;
+  padding:7px 18px;font-size:13px;color:var(--amber);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;
+  box-shadow:0 0 24px rgba(255,179,71,.25);
+}
+#stage.paused #pauseChip{opacity:1;transform:translateX(-50%) translateY(0)}
+.stage-hint{
+  position:absolute;right:16px;bottom:14px;z-index:5;pointer-events:none;
+  font-size:11px;color:var(--muted);letter-spacing:.5px;
+  background:var(--scrim);border:1px solid var(--line);border-radius:999px;padding:6px 13px;
+  backdrop-filter:blur(8px);
+}
+.stage-hint kbd{
+  font-family:var(--font-latin);font-size:10px;color:var(--amber);
+  border:1px solid rgba(255,179,71,.4);border-radius:5px;padding:1px 5px;margin:0 2px;
+}
+
+/* ---------- control dock ---------- */
+#dock{
+  grid-area:dock;min-height:0;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,var(--surface) 0%, #0b1e2e 100%);
+  border-left:1px solid var(--line);position:relative;z-index:10;
+}
+.dock-head{
+  padding:14px 18px 10px;flex:none;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--line);
+}
+.dock-head .t{font-family:var(--font-disp);font-size:17px;letter-spacing:2px;color:var(--ink)}
+.dock-head .e{font-family:var(--font-latin);font-size:9.5px;letter-spacing:3px;color:var(--faint);text-transform:uppercase}
+.dock-scroll{
+  flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+  padding:14px 18px 20px;
+  scrollbar-width:thin;scrollbar-color:var(--teal) #0a1a28;
+}
+.dock-scroll::-webkit-scrollbar{width:10px}
+.dock-scroll::-webkit-scrollbar-track{background:#0a1a28;border-left:1px solid rgba(46,196,182,.1)}
+.dock-scroll::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,var(--teal),var(--coral));
+  border-radius:8px;border:2px solid #0a1a28;
+}
+.dock-scroll::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--amber),var(--coral))}
+section.ctrl{margin-bottom:18px}
+.sec-title{
+  display:flex;align-items:center;gap:8px;margin-bottom:12px;
+  font-size:12px;font-weight:700;letter-spacing:2.5px;color:var(--muted);
+}
+.sec-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line-strong),transparent)}
+.sec-title .ico{font-size:14px;filter:saturate(1.2)}
+.field{margin-bottom:13px}
+.field .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.field label{font-size:13px;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:6px}
+.field label .en{font-family:var(--font-latin);font-size:9px;letter-spacing:1.5px;color:var(--faint);text-transform:uppercase}
+.val{
+  font-family:var(--font-latin);font-weight:600;font-size:12px;color:var(--amber);
+  background:rgba(255,179,71,.1);border:1px solid rgba(255,179,71,.28);
+  border-radius:7px;padding:2px 8px;min-width:52px;text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:pointer;--p:50%;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:7px;border-radius:6px;
+  background:linear-gradient(90deg,var(--teal),var(--amber) var(--p),rgba(243,233,214,.1) var(--p));
+  border:1px solid rgba(46,196,182,.22);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;margin-top:-6.5px;
+  background:radial-gradient(circle at 34% 30%,#ff8a7a,var(--coral) 62%,var(--coral-deep));
+  border:2px solid var(--ink);
+  box-shadow:0 0 0 3px rgba(255,90,78,.22),0 3px 10px rgba(0,0,0,.4);
+  transition:transform .12s ease, box-shadow .2s ease;
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18);box-shadow:0 0 0 5px rgba(255,179,71,.28),0 3px 12px rgba(0,0,0,.45)}
+input[type=range]::-moz-range-track{height:7px;border-radius:6px;background:rgba(243,233,214,.1);border:1px solid rgba(46,196,182,.22)}
+input[type=range]::-moz-range-progress{height:7px;border-radius:6px;background:linear-gradient(90deg,var(--teal),var(--amber))}
+input[type=range]::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#ff8a7a,var(--coral) 62%,var(--coral-deep));
+  border:2px solid var(--ink);box-shadow:0 0 0 3px rgba(255,90,78,.22);
+}
+/* toggle switch */
+.switch-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.switch-row .lab{font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px}
+.switch-row .lab .en{font-family:var(--font-latin);font-size:9px;letter-spacing:1.5px;color:var(--faint);text-transform:uppercase}
+.switch{position:relative;width:44px;height:24px;flex:none}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;margin:0}
+.switch .knob{
+  position:absolute;inset:0;border-radius:999px;pointer-events:none;
+  background:rgba(243,233,214,.1);border:1px solid var(--line);
+  transition:background .2s ease,border-color .2s ease;
+}
+.switch .knob::after{
+  content:"";position:absolute;top:2.5px;left:3px;width:17px;height:17px;border-radius:50%;
+  background:var(--muted);transition:transform .22s cubic-bezier(.5,1.6,.4,1),background .2s;
+}
+.switch input:checked + .knob{background:linear-gradient(90deg,rgba(46,196,182,.5),rgba(255,179,71,.5));border-color:var(--teal)}
+.switch input:checked + .knob::after{transform:translateX(19px);background:var(--ink);box-shadow:0 0 10px rgba(255,179,71,.6)}
+.switch input:focus-visible + .knob{outline:2px solid var(--amber);outline-offset:2px}
+/* theme chips */
+.themes{display:grid;grid-template-columns:1fr;gap:8px}
+.theme-chip{
+  display:flex;align-items:center;gap:10px;width:100%;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+  padding:9px 12px;cursor:pointer;color:var(--ink);font-family:var(--font-body);
+  transition:border-color .18s, transform .15s, box-shadow .2s;text-align:left;
+}
+.theme-chip:hover{transform:translateX(3px);border-color:var(--line-strong)}
+.theme-chip.active{border-color:var(--amber);box-shadow:0 0 0 1px rgba(255,179,71,.35),0 4px 16px rgba(255,179,71,.15);background:linear-gradient(120deg,rgba(255,179,71,.1),var(--surface-2) 55%)}
+.theme-chip .dots{display:flex;gap:4px;flex:none}
+.theme-chip .dots i{width:13px;height:13px;border-radius:50%;border:1.5px solid rgba(243,233,214,.5)}
+.theme-chip .nm{font-size:13px;font-weight:700}
+.theme-chip .ds{font-size:10.5px;color:var(--muted);margin-left:auto;font-family:var(--font-latin);letter-spacing:1px}
+/* action buttons */
+.btn-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.btn{
+  font-family:var(--font-body);font-size:12.5px;font-weight:700;color:var(--ink);
+  border-radius:11px;padding:10px 6px;cursor:pointer;border:1px solid var(--line-strong);
+  background:linear-gradient(160deg,var(--surface-2),var(--surface));
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:transform .14s ease, box-shadow .2s, border-color .2s;
+}
+.btn .bi{font-size:17px;line-height:1}
+.btn:hover{transform:translateY(-2px);border-color:var(--teal);box-shadow:0 7px 18px rgba(46,196,182,.2)}
+.btn:active{transform:translateY(0) scale(.96)}
+.btn.bell:hover{border-color:var(--amber);box-shadow:0 7px 18px rgba(255,179,71,.25)}
+.btn.dice.spin .bi{animation:diceSpin .55s ease}
+@keyframes diceSpin{0%{transform:rotate(0) scale(1)}50%{transform:rotate(200deg) scale(1.35)}100%{transform:rotate(360deg) scale(1)}}
+.export-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.btn-primary{
+  font-family:var(--font-body);font-size:13.5px;font-weight:700;color:#2a1208;
+  background:linear-gradient(95deg,var(--amber),var(--coral));
+  border:none;border-radius:12px;padding:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 6px 20px rgba(255,120,70,.3), inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .14s ease, box-shadow .2s, filter .2s;
+}
+.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.07);box-shadow:0 10px 26px rgba(255,120,70,.42)}
+.btn-primary:active{transform:scale(.97)}
+.btn-ghost{
+  font-family:var(--font-body);font-size:12.5px;font-weight:600;color:var(--ink);
+  background:transparent;border:1px solid var(--line-strong);border-radius:11px;
+  padding:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:border-color .2s, background .2s, transform .14s;
+}
+.btn-ghost:hover{border-color:var(--info);background:rgba(76,201,240,.08);transform:translateY(-1px)}
+.btn-ghost:active{transform:scale(.97)}
+.dock-foot{
+  margin-top:4px;padding-top:12px;border-top:1px solid var(--line);
+  font-size:10.5px;color:var(--faint);line-height:1.9;letter-spacing:.4px;
+}
+.dock-foot kbd{
+  font-family:var(--font-latin);font-size:9.5px;color:var(--amber);
+  border:1px solid rgba(255,179,71,.35);border-radius:4px;padding:0 5px;margin:0 1px;
+}
+/* toasts */
+#toasts{position:fixed;left:18px;bottom:18px;z-index:100;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{
+  background:var(--overlay);border:1px solid var(--line-strong);border-left:4px solid var(--success);
+  color:var(--ink);font-size:13px;font-weight:500;border-radius:11px;
+  padding:11px 16px;box-shadow:0 10px 30px rgba(0,0,0,.45);
+  animation:toastIn .3s cubic-bezier(.3,1.4,.5,1) both;max-width:320px;
+}
+.toast.info{border-left-color:var(--info)} .toast.warn{border-left-color:var(--warning)}
+.toast.out{animation:toastOut .3s ease both}
+@keyframes toastIn{from{opacity:0;transform:translateY(14px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(8px) scale(.96)}}
+/* entrance */
+.reveal{animation:rise .7s cubic-bezier(.2,.9,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#topbar.reveal{animation-delay:.05s}
+#dock .reveal:nth-child(1){animation-delay:.15s}
+#dock .reveal:nth-child(2){animation-delay:.25s}
+#dock .reveal:nth-child(3){animation-delay:.35s}
+#dock .reveal:nth-child(4){animation-delay:.45s}
+#dock .reveal:nth-child(5){animation-delay:.55s}
+.hud.reveal{animation-delay:.6s}
+#timeChip.reveal{animation-delay:.5s}
+@media (prefers-reduced-motion:reduce){
+  .reveal,.toast,.btn.dice.spin .bi{animation:none !important}
+}
+/* ---------- mobile ---------- */
+@media (max-width:920px){
+  #app{
+    grid-template-columns:1fr;
+    grid-template-rows:auto minmax(220px,1fr) auto;
+    grid-template-areas:"top" "stage" "dock";
+  }
+  #dock{border-left:none;border-top:1px solid var(--line);max-height:44dvh}
+  .dock-scroll{padding:12px 16px 16px}
+  .brand h1{font-size:18px}
+  .brand .sub{display:none}
+  .icon-btn{padding:7px 10px;font-size:12px}
+  .stage-hint{display:none}
+  .hud{left:10px;bottom:10px;gap:6px}
+  .chip{padding:4px 10px;font-size:11px}
+  .chip b{font-size:13px}
+  #timeChip{top:10px;left:10px;padding:5px 12px;font-size:12px}
+  .btn-grid{grid-template-columns:1fr 1fr 1fr}
+  .export-grid{grid-template-columns:1fr 1fr 1fr}
+  .btn-primary{padding:10px 6px;font-size:12px}
+  .btn-ghost{padding:10px 6px;font-size:11.5px}
+  #toasts{left:12px;bottom:calc(44dvh + 12px)}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════ TOP BAR ══════════ -->
+  <header id="topbar" class="reveal">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 30 30">
+          <circle cx="12" cy="12" r="7.5" fill="#fdf6e3" stroke="#4a3b32" stroke-width="1.4"/>
+          <path d="M17 10 C23 9.5 27 11 28.5 12.5 C27 13.5 22 13.8 17 13.2 Z" fill="#ffb347" stroke="#4a3b32" stroke-width="1"/>
+          <path d="M17 13 C21 17 25 16.5 28 13.4 C24 14.4 20 14 17 13 Z" fill="#ff9e7d" stroke="#4a3b32" stroke-width="1"/>
+          <circle cx="13.5" cy="10.5" r="1.6" fill="#2e2a33"/>
+          <path d="M6 20 C4 24 7 27 12 27 L22 27" fill="none" stroke="#2ec4b6" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="9" cy="26" r="3" fill="none" stroke="#ff5a4e" stroke-width="2"/>
+          <circle cx="21" cy="26" r="3" fill="none" stroke="#ff5a4e" stroke-width="2"/>
+        </svg>
+      </div>
+      <div>
+        <h1>鹈鹕骑行记</h1>
+        <div class="sub">Pelican Rider · Seaside Boardwalk</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button id="soundBtn" class="icon-btn" aria-pressed="true" title="切换音效">
+        <span class="dot"></span><span id="soundLabel">🔔 音效：开</span>
+      </button>
+      <button id="pauseBtn" class="icon-btn" title="暂停 / 继续（空格）">⏸ 暂停</button>
+    </div>
+  </header>
+
+  <!-- ══════════ STAGE ══════════ -->
+  <main id="stage">
+    <svg id="scene" viewBox="0 0 1200 675" preserveAspectRatio="xMidYMid slice" role="img" aria-label="一只鹈鹕沿着海边栈道骑自行车的动画">
+      <style>
+        text{font-family:'Noto Sans SC','PingFang SC',sans-serif}
+        .latin{font-family:'Fraunces',Georgia,serif}
+      </style>
+      <defs>
+        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop id="skyS0" offset="0" stop-color="#35589b"/>
+          <stop id="skyS1" offset="0.55" stop-color="#ff8c5a"/>
+          <stop id="skyS2" offset="1" stop-color="#ffd97a"/>
+        </linearGradient>
+        <linearGradient id="seaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop id="seaS0" offset="0" stop-color="#2a9d8f"/>
+          <stop id="seaS1" offset="1" stop-color="#1d6a75"/>
+        </linearGradient>
+        <radialGradient id="sunGlow">
+          <stop id="sunG0" offset="0" stop-color="#ff7b54" stop-opacity="0.55"/>
+          <stop id="sunG1" offset="1" stop-color="#ff7b54" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="moonGlow">
+          <stop offset="0" stop-color="#cfd8ff" stop-opacity="0.4"/>
+          <stop offset="1" stop-color="#cfd8ff" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="lampGlow">
+          <stop offset="0" stop-color="#ffd97a" stop-opacity="0.75"/>
+          <stop offset="0.5" stop-color="#ffb347" stop-opacity="0.25"/>
+          <stop offset="1" stop-color="#ffb347" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="beamGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#ffd97a" stop-opacity="0.5"/>
+          <stop offset="1" stop-color="#ffd97a" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="beamGradL" x1="1" y1="0" x2="0" y2="0">
+          <stop offset="0" stop-color="#ffd97a" stop-opacity="0.45"/>
+          <stop offset="1" stop-color="#ffd97a" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="beakGrad" x1="0" y1="0" x2="1" y2="0.3">
+          <stop offset="0" stop-color="var(--beak)"/>
+          <stop offset="1" stop-color="var(--beak2)"/>
+        </linearGradient>
+        <linearGradient id="pouchGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--pouch)"/>
+          <stop offset="1" stop-color="var(--pouch2)"/>
+        </linearGradient>
+        <radialGradient id="vignette" cx="0.5" cy="0.42" r="0.78">
+          <stop offset="0" stop-color="#050812" stop-opacity="0"/>
+          <stop offset="0.72" stop-color="#050812" stop-opacity="0"/>
+          <stop offset="1" stop-color="#050812" stop-opacity="0.42"/>
+        </radialGradient>
+        <filter id="grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
+          <feComponentTransfer><feFuncA type="linear" slope="0.06"/></feComponentTransfer>
+        </filter>
+
+        <!-- repeating boardwalk tile (1200 wide) -->
+        <g id="roadTile">
+          <rect x="0" y="548" width="1200" height="127" fill="var(--road)"/>
+          <path d="M0 596 H1200 M0 640 H1200" stroke="var(--roadLine)" stroke-width="2" opacity="0.45"/>
+          <path d="M40 548 V675 M80 548 V675 M120 548 V675 M160 548 V675 M200 548 V675 M240 548 V675 M280 548 V675 M320 548 V675 M360 548 V675 M400 548 V675 M440 548 V675 M480 548 V675 M520 548 V675 M560 548 V675 M600 548 V675 M640 548 V675 M680 548 V675 M720 548 V675 M760 548 V675 M800 548 V675 M840 548 V675 M880 548 V675 M920 548 V675 M960 548 V675 M1000 548 V675 M1040 548 V675 M1080 548 V675 M1120 548 V675 M1160 548 V675" stroke="var(--roadLine)" stroke-width="2" opacity="0.3"/>
+          <rect x="0" y="546" width="1200" height="3.5" fill="#f3e9d6" opacity="0.4"/>
+          <path d="M0 502 H1200" stroke="#7a5a42" stroke-width="5"/>
+          <path d="M0 524 H1200" stroke="#7a5a42" stroke-width="3" opacity="0.85"/>
+          <g fill="#6b4c37">
+            <rect x="17" y="502" width="6" height="46"/><rect x="117" y="502" width="6" height="46"/>
+            <rect x="217" y="502" width="6" height="46"/><rect x="317" y="502" width="6" height="46"/>
+            <rect x="417" y="502" width="6" height="46"/><rect x="517" y="502" width="6" height="46"/>
+            <rect x="617" y="502" width="6" height="46"/><rect x="717" y="502" width="6" height="46"/>
+            <rect x="817" y="502" width="6" height="46"/><rect x="917" y="502" width="6" height="46"/>
+            <rect x="1017" y="502" width="6" height="46"/><rect x="1117" y="502" width="6" height="46"/>
+          </g>
+        </g>
+
+        <!-- repeating foreground tile (1500 wide) -->
+        <g id="fgTile">
+          <!-- palm -->
+          <g>
+            <path d="M150 664 C146 606 156 548 143 478 C138 448 140 414 149 382" fill="none" stroke="#6b4a35" stroke-width="11" stroke-linecap="round"/>
+            <path d="M150 664 C146 606 156 548 143 478" fill="none" stroke="#59402e" stroke-width="4" stroke-dasharray="3 14" opacity="0.6"/>
+            <g id="palmFrondsA" transform="translate(149 380)">
+              <g class="frond" data-a="-168"><path d="M0 0 C22 -16 52 -18 76 -6 C50 -9 24 -2 0 7 Z" fill="#2f8f5b"/></g>
+              <g class="frond" data-a="-128"><path d="M0 0 C22 -16 52 -18 76 -6 C50 -9 24 -2 0 7 Z" fill="#37a468"/></g>
+              <g class="frond" data-a="-86"><path d="M0 0 C22 -16 52 -18 76 -6 C50 -9 24 -2 0 7 Z" fill="#2f8f5b"/></g>
+              <g class="frond" data-a="-42"><path d="M0 0 C22 -16 52 -18 76 -6 C50 -9 24 -2 0 7 Z" fill="#37a468"/></g>
+              <g class="frond" data-a="-4"><path d="M0 0 C22 -16 52 -18 76 -6 C50 -9 24 -2 0 7 Z" fill="#2f8f5b"/></g>
+              <g class="frond" data-a="34"><path d="M0 0 C22 -16 52 -18 76 -6 C50 -9 24 -2 0 7 Z" fill="#27794c"/></g>
+              <circle cx="-4" cy="6" r="5" fill="#8a5a35"/><circle cx="5" cy="8" r="4.4" fill="#7a4e2c"/>
+            </g>
+          </g>
+          <!-- lamp post -->
+          <g>
+            <rect x="597" y="474" width="6" height="190" rx="3" fill="#2e3a4a"/>
+            <path d="M600 474 C600 462 600 458 600 452" stroke="#2e3a4a" stroke-width="6" fill="none"/>
+            <circle cx="600" cy="446" r="34" fill="url(#lampGlow)" style="opacity:var(--lampO)"/>
+            <path d="M590 452 L610 452 L606 438 L594 438 Z" fill="#3a4a5e" stroke="#22303e" stroke-width="1.5"/>
+            <circle cx="600" cy="446" r="6" fill="#ffd97a" style="opacity:var(--lampO)"/>
+            <circle cx="600" cy="446" r="6" fill="#5a6a7e" opacity="0.5"/>
+            <path d="M592 438 L608 438 L600 430 Z" fill="#2e3a4a"/>
+            <rect x="592" y="660" width="16" height="6" rx="2" fill="#22303e"/>
+          </g>
+          <!-- beach grass + starfish -->
+          <g id="grassA" transform="translate(950 664)">
+            <path d="M0 0 C-4 -14 -10 -22 -16 -28" stroke="#3f7d4f" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+            <path d="M2 0 C2 -16 0 -26 -3 -34" stroke="#4a8f5c" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+            <path d="M4 0 C8 -14 14 -22 20 -27" stroke="#3f7d4f" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+            <path d="M-3 0 C-8 -10 -14 -14 -22 -16" stroke="#356b44" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M6 0 C12 -8 18 -12 26 -13" stroke="#356b44" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </g>
+          <path transform="translate(994 656) rotate(18)" d="M0 -7 L2 -2 L7 -2 L3 1.5 L4.6 7 L0 3.6 L-4.6 7 L-3 1.5 L-7 -2 L-2 -2 Z" fill="#ff8c69" stroke="#d96a4a" stroke-width="1"/>
+          <!-- sign -->
+          <g>
+            <rect x="1247" y="594" width="6" height="70" fill="#6b4a35"/>
+            <rect x="1212" y="558" width="76" height="38" rx="7" fill="#f3e9d6" stroke="#6b4a35" stroke-width="2.5"/>
+            <text x="1250" y="575" text-anchor="middle" font-size="14" font-weight="700" fill="#6b4a35">海风大道</text>
+            <path d="M1224 585 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0" stroke="#2ec4b6" stroke-width="2" fill="none"/>
+          </g>
+          <g transform="translate(1420 664)">
+            <path d="M0 0 C-4 -12 -9 -19 -15 -24" stroke="#3f7d4f" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+            <path d="M2 0 C2 -14 1 -22 -2 -29" stroke="#4a8f5c" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+            <path d="M4 0 C8 -11 13 -18 19 -22" stroke="#3f7d4f" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+          </g>
+        </g>
+      </defs>
+
+      <g id="world">
+        <!-- sky -->
+        <rect x="-200" y="-100" width="1600" height="480" fill="url(#skyGrad)"/>
+        <g id="stars" style="opacity:var(--starsO)"></g>
+        <g id="sunG">
+          <circle r="60" fill="url(#sunGlow)"/>
+          <g id="sunRays" stroke="#ffb347" stroke-width="3" stroke-linecap="round" opacity="0.55"></g>
+          <circle id="sunCore" r="26" fill="#ffb347"/>
+        </g>
+        <g id="moonG" style="opacity:var(--starsO)">
+          <circle cx="930" cy="118" r="36" fill="url(#moonGlow)"/>
+          <circle cx="930" cy="118" r="20" fill="#f3e9d6"/>
+          <circle cx="938" cy="112" r="17" fill="var(--skyTop)"/>
+          <circle cx="922" cy="124" r="3" fill="#c9c2ae" opacity="0.5"/>
+          <circle cx="927" cy="131" r="2" fill="#c9c2ae" opacity="0.4"/>
+        </g>
+        <g id="clouds">
+          <g class="cloud" data-y="92"  data-x="220"  fill="var(--cloud)" opacity="0.92">
+            <ellipse rx="40" ry="16"/><ellipse cx="30" cy="-9" rx="27" ry="14"/><ellipse cx="-31" cy="-4" rx="23" ry="12"/>
+          </g>
+          <g class="cloud" data-y="158" data-x="660" fill="var(--cloud)" opacity="0.8">
+            <ellipse rx="33" ry="13"/><ellipse cx="25" cy="-7" rx="22" ry="11"/><ellipse cx="-25" cy="-3" rx="19" ry="10"/>
+          </g>
+          <g class="cloud" data-y="216" data-x="1010" fill="var(--cloud)" opacity="0.7">
+            <ellipse rx="27" ry="11"/><ellipse cx="20" cy="-6" rx="18" ry="9"/><ellipse cx="-20" cy="-2" rx="15" ry="8"/>
+          </g>
+        </g>
+        <!-- headlands + lighthouse -->
+        <path d="M-100 380 C-20 344 90 336 190 358 C260 373 320 378 400 380 Z" fill="var(--hill)" opacity="0.75"/>
+        <path d="M860 380 C930 344 1000 328 1062 330 C1124 332 1180 356 1300 366 L1300 380 Z" fill="var(--hill)"/>
+        <g id="lighthouse">
+          <path id="lhBeam" d="M1052 291 L880 262 L880 320 Z" fill="url(#beamGradL)" style="opacity:var(--beamO)"/>
+          <path d="M1045 332 L1059 332 L1056 296 L1048 296 Z" fill="#f3e9d6" stroke="#4a3b32" stroke-width="1.2"/>
+          <path d="M1047.4 305 L1056.6 305 L1057.2 312 L1046.8 312 Z" fill="#ff5a4e"/>
+          <path d="M1046.2 319 L1057.8 319 L1058.4 326 L1045.6 326 Z" fill="#ff5a4e"/>
+          <rect x="1047" y="287" width="10" height="9" rx="1.5" fill="#2e3a4a"/>
+          <circle cx="1052" cy="291" r="3.2" fill="#ffd97a" style="opacity:var(--lampO)"/>
+          <path d="M1046 287 L1058 287 L1052 281 Z" fill="#c93a32"/>
+        </g>
+        <!-- sea -->
+        <rect x="-200" y="380" width="1600" height="168" fill="url(#seaGrad)"/>
+        <path id="wave1" fill="none" stroke="var(--seaSpark)" stroke-width="2.5" opacity="0.5"/>
+        <path id="wave2" fill="none" stroke="var(--seaSpark)" stroke-width="2" opacity="0.3"/>
+        <g id="sparkles" fill="#ffffff"></g>
+        <g id="boat">
+          <path d="M-17 0 L17 0 L10 8 L-10 8 Z" fill="#c9563f" stroke="#4a3b32" stroke-width="1.2"/>
+          <path d="M0 0 L0 -27" stroke="#4a3b32" stroke-width="1.6"/>
+          <path d="M1 -27 L15 -4 L1 -4 Z" fill="#f3e9d6" stroke="#4a3b32" stroke-width="1"/>
+          <path d="M-1 -22 L-11 -4 L-1 -4 Z" fill="var(--scarf)" stroke="#4a3b32" stroke-width="1"/>
+        </g>
+        <g id="gulls" stroke="#33424f" fill="none" stroke-width="2.4" stroke-linecap="round"></g>
+        <!-- boardwalk -->
+        <g id="roadScroll">
+          <use href="#roadTile" x="0"/><use href="#roadTile" x="1200"/><use href="#roadTile" x="2400"/>
+        </g>
+        <!-- contact shadows -->
+        <ellipse id="shadowR" cx="420" cy="561" rx="55" ry="5.5" fill="#140f1e" opacity="0.28"/>
+        <ellipse id="shadowF" cx="675" cy="561" rx="55" ry="5.5" fill="#140f1e" opacity="0.28"/>
+        <!-- speed lines -->
+        <g id="speedLines" stroke="#f3e9d6" stroke-width="3" stroke-linecap="round"></g>
+
+        <!-- ══════════ THE PELICAN ON THE BICYCLE ══════════ -->
+        <g id="rider">
+          <!-- far leg (behind frame) -->
+          <path id="legFar" d="" fill="none" stroke="var(--legFar)" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <g id="footFar"><path d="M-6 -2 L14 -4 L17 2 L12 1 L14 5 L8 3 L9 7 L-4 4 Z" fill="var(--legFar)" stroke="var(--outline)" stroke-width="1.4" stroke-linejoin="round"/></g>
+          <line id="crankArmF" x1="62" y1="-2" x2="62" y2="20" stroke="#2e2a33" stroke-width="5" stroke-linecap="round" opacity="0.85"/>
+          <g id="pedalF"><rect x="-9" y="-2.5" width="18" height="5" rx="2" fill="#2e2a33"/><circle r="1.5" fill="#ffb347" opacity="0.8"/></g>
+
+          <!-- bicycle -->
+          <g id="bike">
+            <path id="headBeam" d="M136 -46 L268 -26 L268 -66 Z" fill="url(#beamGrad)" style="opacity:var(--beamO)"/>
+            <g id="wheelR" transform="translate(0 0)">
+              <circle class="tire" r="38" fill="none" stroke="#2e2a33" stroke-width="7"/>
+              <circle class="rim" r="32.5" fill="none" stroke="#d8dee5" stroke-width="2.5"/>
+              <g class="rot"></g>
+              <circle r="4.5" fill="#d8dee5" stroke="#2e2a33" stroke-width="1.5"/>
+            </g>
+            <g id="wheelF" transform="translate(150 0)">
+              <circle class="tire" r="38" fill="none" stroke="#2e2a33" stroke-width="7"/>
+              <circle class="rim" r="32.5" fill="none" stroke="#d8dee5" stroke-width="2.5"/>
+              <g class="rot"></g>
+              <circle r="4.5" fill="#d8dee5" stroke="#2e2a33" stroke-width="1.5"/>
+            </g>
+            <path id="fenderR" d="" fill="none" stroke="var(--bikeDark)" stroke-width="6" stroke-linecap="round"/>
+            <path id="fenderF" d="" fill="none" stroke="var(--bikeDark)" stroke-width="6" stroke-linecap="round"/>
+            <line id="stayR" x1="0" y1="0" x2="34" y2="-16" stroke="var(--bikeDark)" stroke-width="2"/>
+            <line id="stayF" x1="150" y1="0" x2="184" y2="-16" stroke="var(--bikeDark)" stroke-width="2"/>
+            <g stroke="var(--bike)" stroke-width="5.5" stroke-linecap="round" fill="none">
+              <path d="M62 -2 L0 0"/>
+              <path d="M40 -56 L0 0"/>
+              <path d="M62 -2 L38 -60"/>
+              <path d="M40 -56 L122 -56"/>
+              <path d="M62 -2 L128 -44"/>
+              <path d="M122 -56 L130 -40"/>
+              <path d="M130 -40 C136 -24 144 -10 150 0"/>
+            </g>
+            <path d="M122 -56 L118 -70" stroke="#2e2a33" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M118 -70 C114 -79 110 -81 104 -80" stroke="#2e2a33" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+            <path d="M109 -80.4 L102 -79.8" stroke="#4a3b32" stroke-width="7" stroke-linecap="round"/>
+            <path id="chain" d="M0 -6.5 L62 -15 A13 13 0 0 1 62 11 L0 6.5 A6.5 6.5 0 0 1 0 -6.5 Z" fill="none" stroke="#2e2a33" stroke-width="2.6" stroke-dasharray="4 3"/>
+            <circle cx="62" cy="-2" r="13" fill="none" stroke="#2e2a33" stroke-width="3"/>
+            <circle cx="62" cy="-2" r="4" fill="#2e2a33"/>
+            <circle cx="0" cy="0" r="6.5" fill="none" stroke="#2e2a33" stroke-width="2.5"/>
+            <path d="M38 -60 L37 -66" stroke="#2e2a33" stroke-width="4"/>
+            <path d="M24 -66 C29 -72 45 -72 51 -66 C45 -61.5 30 -61.5 24 -66 Z" fill="#6b4a35" stroke="#4a3b32" stroke-width="1.6"/>
+            <g id="headlamp">
+              <circle cx="131" cy="-47" r="5.5" fill="#2e3a4a" stroke="#22303e" stroke-width="1.2"/>
+              <circle cx="133.5" cy="-47" r="3.4" fill="#ffd97a" opacity="0.35"/>
+              <circle cx="133.5" cy="-47" r="3.4" fill="#ffd97a" style="opacity:var(--lampO)"/>
+            </g>
+            <g id="bellG">
+              <path d="M111.5 -75.5 A5 5 0 0 1 121.5 -75.5 Z" fill="#ffb347" stroke="#4a3b32" stroke-width="1.4"/>
+              <path d="M110.5 -75.5 L122.5 -75.5" stroke="#4a3b32" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="116.5" cy="-81.5" r="1.4" fill="#4a3b32"/>
+            </g>
+            <circle id="bellHit" cx="116.5" cy="-78" r="13" fill="transparent"/>
+          </g>
+
+          <!-- near crank -->
+          <line id="crankArmN" x1="62" y1="-2" x2="62" y2="20" stroke="#2e2a33" stroke-width="5" stroke-linecap="round"/>
+          <g id="pedalN"><rect x="-9" y="-2.5" width="18" height="5" rx="2" fill="#2e2a33"/><circle r="1.5" fill="#ffb347"/></g>
+
+          <!-- pelican -->
+          <g id="pelican">
+            <path id="tail" d="M16 -108 L-12 -125 L-2 -110 L-18 -113 L-4 -100 L-15 -93 L15 -92 Z" fill="var(--shade)" stroke="var(--outline)" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M10 -100 C4 -118 20 -133 44 -131 C66 -129 79 -116 77 -100 C75 -84 62 -72 43 -72 C25 -72 14 -83 10 -100 Z" fill="var(--body)" stroke="var(--outline)" stroke-width="2.5"/>
+            <path d="M20 -84 C30 -76 52 -76 66 -88 C58 -76 46 -71 40 -72 C30 -72 24 -78 20 -84 Z" fill="var(--shade)" opacity="0.55"/>
+            <path id="scarf2" d="" fill="var(--scarf2)" stroke="var(--outline)" stroke-width="1.2"/>
+            <path id="scarf1" d="" fill="var(--scarf)" stroke="var(--outline)" stroke-width="1.2"/>
+            <path d="M68 -108 C84 -112 88 -122 88 -132 C88 -143 92 -149 99 -152" fill="none" stroke="var(--body)" stroke-width="15" stroke-linecap="round"/>
+            <ellipse cx="74" cy="-118" rx="6" ry="5" fill="var(--scarf)" stroke="var(--outline)" stroke-width="1.4"/>
+            <g id="headG">
+              <path id="pouch" d="" fill="url(#pouchGrad)" stroke="var(--outline)" stroke-width="1.6"/>
+              <g id="fish" transform="translate(146 -142)">
+                <ellipse cx="1" cy="2" rx="5.5" ry="3.4" fill="#2ec4b6" stroke="#1a7f74" stroke-width="1"/>
+                <path d="M4 0 L13 -9 L9 0 L13 8 Z" fill="#2ec4b6" stroke="#1a7f74" stroke-width="1" stroke-linejoin="round"/>
+              </g>
+              <path d="M105 -161 C128 -162 152 -157 172 -151 C174.5 -149 173.5 -145.5 170 -146 C148 -149 124 -151 105 -151 Z" fill="url(#beakGrad)" stroke="var(--outline)" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M112 -157 L127 -156" stroke="var(--outline)" stroke-width="1" opacity="0.45"/>
+              <circle cx="100" cy="-155" r="12.5" fill="var(--body)" stroke="var(--outline)" stroke-width="2.2"/>
+              <path d="M91 -164 C85 -170 83 -176 85 -181 C89 -176 92 -173 95 -171 C93 -175 94 -179 97 -182 C98 -177 99 -173 101 -169 Z" fill="var(--shade)" stroke="var(--outline)" stroke-width="1.6" stroke-linejoin="round"/>
+              <circle cx="93" cy="-148.5" r="3" fill="#ff8fa3" opacity="0.5"/>
+              <g id="eyeG">
+                <circle cx="104" cy="-159" r="4.2" fill="#ffffff" stroke="var(--outline)" stroke-width="1.2"/>
+                <circle cx="105.2" cy="-158.8" r="2.1" fill="#2e2a33"/>
+                <circle cx="106" cy="-159.8" r="0.8" fill="#ffffff"/>
+              </g>
+              <path d="M100 -165.5 C103 -167 107 -167 109.5 -165" stroke="var(--outline)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            </g>
+            <g id="wingG">
+              <path d="M57 -112 C74 -112 90 -100 101 -88 L110 -82 L102 -82 L109 -75 L100 -77 L104 -70 L96 -76 C82 -82 64 -92 55 -100 Z" fill="var(--shade)" stroke="var(--outline)" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M66 -104 C78 -100 88 -93 96 -86 M62 -98 C72 -95 80 -90 88 -84" stroke="var(--outline)" stroke-width="1.4" fill="none" opacity="0.35"/>
+            </g>
+          </g>
+
+          <!-- near leg (over body & crank) -->
+          <path id="legNear" d="" fill="none" stroke="var(--leg)" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <g id="footNear"><path d="M-6 -2 L15 -4.5 L18.5 2 L13 1 L15.5 5.5 L9 3.2 L10 7.5 L-4 4.5 Z" fill="var(--leg)" stroke="var(--outline)" stroke-width="1.5" stroke-linejoin="round"/></g>
+
+          <g id="fx"></g>
+        </g>
+
+        <!-- foreground parallax -->
+        <g id="fgScroll">
+          <use href="#fgTile" x="0"/><use href="#fgTile" x="1500"/><use href="#fgTile" x="3000"/>
+        </g>
+        <rect id="ambient" x="-200" y="-100" width="1600" height="875" fill="#0a1030" style="opacity:var(--ambO)" pointer-events="none"/>
+      </g>
+
+      <rect x="0" y="0" width="1200" height="675" fill="url(#vignette)" pointer-events="none"/>
+      <rect x="0" y="0" width="1200" height="675" filter="url(#grain)" opacity="0.55" pointer-events="none"/>
+    </svg>
+
+    <div id="timeChip" class="reveal"><span id="timeEmoji">🌇</span><span class="tlabel" id="timeLabel">黄金时刻</span><span class="tsub" id="timeSub">Golden Hour</span></div>
+    <div id="pauseChip">⏸ 已暂停 — 按空格继续</div>
+    <div class="hud reveal">
+      <span class="chip speed">🚲 <b id="hudSpeed">21.6</b><span class="u">km/h</span></span>
+      <span class="chip dist">📏 <b id="hudDist">0</b><span class="u">m</span></span>
+      <span class="chip cad">🦵 <b id="hudCad">33</b><span class="u">rpm</span></span>
+    </div>
+    <div class="stage-hint"><kbd>空格</kbd>暂停 · <kbd>B</kbd>按铃 · <kbd>R</kbd>随机 · 点车铃会响</div>
+  </main>
+
+  <!-- ══════════ CONTROL DOCK ══════════ -->
+  <aside id="dock">
+    <div class="dock-head">
+      <span class="t">🎛 骑行控制台</span><span class="e">Control Deck</span>
+    </div>
+    <div class="dock-scroll">
+
+      <section class="ctrl reveal">
+        <div class="sec-title"><span class="ico">🚴</span>骑行姿态 · RIDE</div>
+        <div class="field">
+          <div class="row"><label>速度 <span class="en">Speed</span></label><span class="val" id="vSpeed">1.0×</span></div>
+          <input type="range" id="inSpeed" min="0" max="3" step="0.05" value="1">
+        </div>
+        <div class="field">
+          <div class="row"><label>车轮尺寸 <span class="en">Wheel</span></label><span class="val" id="vWheel">38px</span></div>
+          <input type="range" id="inWheel" min="28" max="48" step="1" value="38">
+        </div>
+        <div class="field">
+          <div class="row"><label>路面颠簸 <span class="en">Bounce</span></label><span class="val" id="vBounce">60%</span></div>
+          <input type="range" id="inBounce" min="0" max="1" step="0.01" value="0.6">
+        </div>
+        <div class="field">
+          <div class="row"><label>海风强度 <span class="en">Wind</span></label><span class="val" id="vWind">45%</span></div>
+          <input type="range" id="inWind" min="0" max="1" step="0.01" value="0.45">
+        </div>
+      </section>
+
+      <section class="ctrl reveal">
+        <div class="sec-title"><span class="ico">🌊</span>海风世界 · WORLD</div>
+        <div class="field">
+          <div class="row"><label>时辰 <span class="en">Time</span></label><span class="val" id="vTime">黄金时刻</span></div>
+          <input type="range" id="inTime" min="0" max="1" step="0.002" value="0.5">
+        </div>
+        <div class="switch-row">
+          <span class="lab">昼夜流转 <span class="en">Auto Cycle</span></span>
+          <span class="switch"><input type="checkbox" id="inAuto"><span class="knob"></span></span>
+        </div>
+        <div class="field">
+          <div class="row"><label>镜头缩放 <span class="en">Zoom</span></label><span class="val" id="vZoom">1.00×</span></div>
+          <input type="range" id="inZoom" min="0.75" max="1.5" step="0.01" value="1">
+        </div>
+        <div class="switch-row">
+          <span class="lab">速度线 <span class="en">Speed Lines</span></span>
+          <span class="switch"><input type="checkbox" id="inLines" checked><span class="knob"></span></span>
+        </div>
+      </section>
+
+      <section class="ctrl reveal">
+        <div class="sec-title"><span class="ico">🎨</span>造型配色 · STYLE</div>
+        <div class="themes">
+          <button class="theme-chip active" data-theme="classic">
+            <span class="dots"><i style="background:#fdf6e3"></i><i style="background:#ff5a4e"></i><i style="background:#2ec4b6"></i></span>
+            <span class="nm">白羽 · 经典</span><span class="ds">CLASSIC</span>
+          </button>
+          <button class="theme-chip" data-theme="brown">
+            <span class="dots"><i style="background:#b08968"></i><i style="background:#2ec4b6"></i><i style="background:#ffb347"></i></span>
+            <span class="nm">褐羽 · 暮潮</span><span class="ds">DUSK</span>
+          </button>
+          <button class="theme-chip" data-theme="pink">
+            <span class="dots"><i style="background:#ffd9e8"></i><i style="background:#4cc9f0"></i><i style="background:#ff8fab"></i></span>
+            <span class="nm">粉霞 · 糖霜</span><span class="ds">CANDY</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="ctrl reveal">
+        <div class="sec-title"><span class="ico">⚡</span>动作 · ACTIONS</div>
+        <div class="btn-grid">
+          <button class="btn dice" id="btnRandom"><span class="bi">🎲</span>随机</button>
+          <button class="btn" id="btnReset"><span class="bi">↺</span>重置</button>
+          <button class="btn bell" id="btnBell"><span class="bi">🔔</span>按铃</button>
+        </div>
+      </section>
+
+      <section class="ctrl reveal">
+        <div class="sec-title"><span class="ico">📦</span>导出此刻 · EXPORT</div>
+        <div class="export-grid">
+          <button class="btn-primary" id="btnSvg">⬇ 下载 SVG（当前画面）</button>
+          <button class="btn-ghost" id="btnCopy">📋 复制 SVG 代码</button>
+          <button class="btn-ghost" id="btnPng">🖼 导出 PNG · 2×</button>
+        </div>
+        <div class="dock-foot">
+          导出的 SVG 会保留当前时辰、配色与所有姿态。<br>
+          <kbd>空格</kbd> 暂停 &nbsp;<kbd>B</kbd> 按铃 &nbsp;<kbd>R</kbd> 随机造型
+        </div>
+      </section>
+
+    </div>
+  </aside>
+</div>
+<div id="toasts"></div>
+
+<script>
+(function(){
+"use strict";
+/* ═══════════════════ state ═══════════════════ */
+const DEFAULTS = { speed:1, wheel:38, bounce:0.6, wind:0.45, time:0.5, zoom:1, lines:true, theme:'classic', auto:false };
+const S = Object.assign({}, DEFAULTS);
+let soundOn = true, paused = false;
+
+const SCALE = 1.7, TX = 420, GROUND = 560;
+const BB = {x:62, y:-2}, CRANK = 22, GEAR = 0.6;
+const HIP_N = {x:38, y:-76}, HIP_F = {x:35, y:-76};
+const L1 = 50, L2 = 51;
+
+const $ = id => document.getElementById(id);
+const svg = $('scene'), world = $('world'), rider = $('rider');
+const svgNS = 'http://www.w3.org/2000/svg';
+
+/* ═══════════════════ themes ═══════════════════ */
+const THEMES = {
+  classic:{ body:'#fdf6e3', shade:'#e4d3ae', beak:'#ffb347', beak2:'#ff8c42', pouch:'#ff9e7d', pouch2:'#ff7b6b',
+            leg:'#ff9f1c', legFar:'#d97b29', bike:'#ff5a4e', bikeDark:'#c93a32', scarf:'#2ec4b6', scarf2:'#1a9e92', outline:'#4a3b32' },
+  brown:{   body:'#c49a76', shade:'#9a7454', beak:'#e0a458', beak2:'#c98a3f', pouch:'#e8927c', pouch2:'#d97b6b',
+            leg:'#e07b39', legFar:'#b85f2a', bike:'#2ec4b6', bikeDark:'#1a9e92', scarf:'#ffb347', scarf2:'#e09a2f', outline:'#4a3428' },
+  pink:{    body:'#ffd9e8', shade:'#f0aecb', beak:'#ff8fab', beak2:'#ff6b95', pouch:'#ffc2d4', pouch2:'#ff9ebb',
+            leg:'#ff8fab', legFar:'#e06a8a', bike:'#4cc9f0', bikeDark:'#2ba8d0', scarf:'#ffb347', scarf2:'#e09a2f', outline:'#7a4a5a' }
+};
+function applyTheme(name){
+  S.theme = name;
+  const t = THEMES[name];
+  for(const k in t) svg.style.setProperty('--'+k, t[k]);
+  document.querySelectorAll('.theme-chip').forEach(b=>b.classList.toggle('active', b.dataset.theme===name));
+}
+
+/* ═══════════════════ time-of-day keyframes ═══════════════════ */
+const KEYS = [
+ {t:0.00, skyTop:'#2b3a67', skyMid:'#e07a5f', skyLow:'#ffd6a5', sea:'#3d6b8e', seaDeep:'#24425f', sunCore:'#ffd166', sunGlow:'#ff9e6d', hill:'#4a5d7e', road:'#8a6a4f', roadLine:'#5f4634', cloud:'#ffd9c2', seaSpark:'#ffe8c9', sunX:220,  sunY:332, starsO:0.14, lampO:0.3, ambO:0.05},
+ {t:0.25, skyTop:'#2f7fd0', skyMid:'#7cc4ef', skyLow:'#d9f0ff', sea:'#2ec4b6', seaDeep:'#157f8c', sunCore:'#fff3b0', sunGlow:'#ffe066', hill:'#6fa287', road:'#9c7a58', roadLine:'#6e543c', cloud:'#ffffff', seaSpark:'#eafffb', sunX:470,  sunY:108, starsO:0,    lampO:0,   ambO:0},
+ {t:0.50, skyTop:'#35589b', skyMid:'#ff8c5a', skyLow:'#ffd97a', sea:'#2a9d8f', seaDeep:'#1d6a75', sunCore:'#ffb347', sunGlow:'#ff7b54', hill:'#6b5b8e', road:'#8a6248', roadLine:'#5c4230', cloud:'#ffe3c2', seaSpark:'#ffd9a8', sunX:760,  sunY:252, starsO:0,    lampO:0.15,ambO:0.04},
+ {t:0.75, skyTop:'#232457', skyMid:'#b0489b', skyLow:'#ff8e6e', sea:'#35507a', seaDeep:'#22335a', sunCore:'#ff6b6b', sunGlow:'#e84f9b', hill:'#3a3a66', road:'#6e4f42', roadLine:'#4a352b', cloud:'#d98ab0', seaSpark:'#ffb99e', sunX:985,  sunY:344, starsO:0.4,  lampO:0.75,ambO:0.14},
+ {t:1.00, skyTop:'#070d24', skyMid:'#14213d', skyLow:'#274060', sea:'#16324a', seaDeep:'#0d2236', sunCore:'#f3e9d6', sunGlow:'#cfd8ff', hill:'#1a2440', road:'#4a3a34', roadLine:'#332822', cloud:'#2a3a55', seaSpark:'#9fb8d8', sunX:1120, sunY:436, starsO:1,    lampO:1,   ambO:0.24}
+];
+function hexLerp(a,b,t){
+  const pa=parseInt(a.slice(1),16), pb=parseInt(b.slice(1),16);
+  const r=Math.round(((pa>>16)&255)+(((pb>>16)&255)-((pa>>16)&255))*t);
+  const g=Math.round(((pa>>8)&255)+(((pb>>8)&255)-((pa>>8)&255))*t);
+  const bl=Math.round((pa&255)+((pb&255)-(pa&255))*t);
+  return '#'+((1<<24)|(r<<16)|(g<<8)|bl).toString(16).slice(1);
+}
+const TIME_NAMES = [
+  [0.12,'🌅','清晨','Dawn'], [0.36,'☀️','正午','High Noon'], [0.62,'🌇','黄金时刻','Golden Hour'],
+  [0.84,'🌆','暮色','Twilight'], [1.01,'🌙','夜骑','Night Ride']
+];
+function timeName(t){ for(const n of TIME_NAMES) if(t<n[0]) return n; return TIME_NAMES[4]; }
+function applyTime(t){
+  S.time = t;
+  let i=0; while(i<KEYS.length-2 && t>KEYS[i+1].t) i++;
+  const a=KEYS[i], b=KEYS[i+1], f=Math.min(1,Math.max(0,(t-a.t)/(b.t-a.t)));
+  const L=(k)=>hexLerp(a[k],b[k],f), N=(k)=>a[k]+(b[k]-a[k])*f;
+  $('skyS0').setAttribute('stop-color',L('skyTop'));
+  $('skyS1').setAttribute('stop-color',L('skyMid'));
+  $('skyS2').setAttribute('stop-color',L('skyLow'));
+  $('seaS0').setAttribute('stop-color',L('sea'));
+  $('seaS1').setAttribute('stop-color',L('seaDeep'));
+  $('sunG0').setAttribute('stop-color',L('sunGlow'));
+  $('sunG1').setAttribute('stop-color',L('sunGlow'));
+  const core=L('sunCore');
+  $('sunCore').setAttribute('fill',core);
+  $('sunRays').setAttribute('stroke',core);
+  $('sunG').setAttribute('transform',`translate(${N('sunX')} ${N('sunY')})`);
+  svg.style.setProperty('--skyTop',L('skyTop'));
+  svg.style.setProperty('--hill',L('hill'));
+  svg.style.setProperty('--road',L('road'));
+  svg.style.setProperty('--roadLine',L('roadLine'));
+  svg.style.setProperty('--cloud',L('cloud'));
+  svg.style.setProperty('--seaSpark',L('seaSpark'));
+  svg.style.setProperty('--starsO',N('starsO').toFixed(3));
+  svg.style.setProperty('--lampO',N('lampO').toFixed(3));
+  svg.style.setProperty('--beamO',(N('lampO')*0.55).toFixed(3));
+  svg.style.setProperty('--ambO',N('ambO').toFixed(3));
+  $('sunRays').setAttribute('opacity',((1-N('starsO'))*0.55).toFixed(3));
+  const nm=timeName(t);
+  $('timeEmoji').textContent=nm[1]; $('timeLabel').textContent=nm[2]; $('timeSub').textContent=nm[3];
+  $('vTime').textContent=nm[2];
+}
+
+/* ═══════════════════ build repeating / generated bits ═══════════════════ */
+function el(name, attrs, parent){
+  const e=document.createElementNS(svgNS,name);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  if(parent) parent.appendChild(e);
+  return e;
+}
+/* stars */
+const starEls=[];
+(function(){
+  const g=$('stars');
+  let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647; return seed/2147483647;};
+  for(let i=0;i<30;i++){
+    const c=el('circle',{cx:(rnd()*1200).toFixed(1), cy:(rnd()*320).toFixed(1), r:(0.7+rnd()*1.2).toFixed(2), fill:'#fff'},g);
+    starEls.push({el:c, ph:rnd()*6.28, sp:1.5+rnd()*2});
+  }
+})();
+/* sun rays */
+(function(){
+  const g=$('sunRays');
+  for(let i=0;i<8;i++){
+    const a=i*Math.PI/4;
+    el('line',{x1:(Math.cos(a)*34).toFixed(1), y1:(Math.sin(a)*34).toFixed(1), x2:(Math.cos(a)*45).toFixed(1), y2:(Math.sin(a)*45).toFixed(1)},g);
+  }
+})();
+/* waves */
+function wavePath(y,amp,step,width){
+  let d=`M0 ${y}`;
+  for(let x=0;x<width;x+=step) d+=` Q ${x+step/2} ${y-amp} ${x+step} ${y}`;
+  return d;
+}
+$('wave1').setAttribute('d',wavePath(424,7,60,2520));
+$('wave2').setAttribute('d',wavePath(478,5,48,2520));
+/* sparkles */
+const sparkEls=[];
+(function(){
+  const g=$('sparkles');
+  const pts=[[140,412],[360,446],[540,404],[720,462],[880,418],[1050,448],[260,490],[980,496]];
+  pts.forEach((p,i)=>{ const c=el('circle',{cx:p[0],cy:p[1],r:1.6},g); sparkEls.push({el:c,ph:i*0.9}); });
+})();
+/* gulls */
+const gulls=[];
+(function(){
+  const g=$('gulls');
+  [[300,120,1],[760,178,0.8],[1080,86,0.65]].forEach((cfg,i)=>{
+    const gg=el('g',{},g);
+    const wl=el('g',{},gg), wr=el('g',{},gg);
+    el('path',{d:'M0 0 C-6 -6 -12 -7 -18 -4'},wl);
+    el('path',{d:'M0 0 C6 -6 12 -7 18 -4'},wr);
+    el('ellipse',{cx:0,cy:0.5,rx:3.4,ry:1.5,fill:'#33424f',stroke:'none'},gg);
+    gulls.push({g:gg,wl,wr,x:cfg[0],y:cfg[1],s:cfg[2],ph:i*2.1});
+  });
+})();
+/* speed lines */
+const lineEls=[];
+(function(){
+  const g=$('speedLines');
+  const ys=[306,348,398,452,506,536];
+  ys.forEach((y,i)=>{
+    const l=el('line',{x1:0,y1:y,x2:0,y2:y,opacity:0},g);
+    lineEls.push({el:l,y,ph:i*47,len:44+((i*29)%52)});
+  });
+})();
+/* wheels: spokes + tread + valve, rebuilt on radius change */
+const wheels=[$('wheelR'),$('wheelF')];
+function buildWheel(R){
+  wheels.forEach(w=>{
+    w.querySelector('.tire').setAttribute('r',R);
+    w.querySelector('.rim').setAttribute('r',R-5.5);
+    const rot=w.querySelector('.rot');
+    while(rot.firstChild) rot.removeChild(rot.firstChild);
+    el('circle',{r:R,fill:'none',stroke:'rgba(0,0,0,0.35)','stroke-width':7,'stroke-dasharray':'2 9'},rot);
+    for(let i=0;i<10;i++){
+      const a=i*Math.PI/5;
+      el('line',{x1:(Math.cos(a)*4.5).toFixed(2),y1:(Math.sin(a)*4.5).toFixed(2),
+                 x2:(Math.cos(a)*(R-7)).toFixed(2),y2:(Math.sin(a)*(R-7)).toFixed(2),
+                 stroke:'#9fb0bd','stroke-width':1.4},rot);
+    }
+    el('circle',{cx:0,cy:-(R-9),r:1.7,fill:'#ffb347'},rot);
+  });
+  const fr=R+8, c=Math.cos(-25*Math.PI/180)*fr, s=Math.sin(-25*Math.PI/180)*fr;
+  $('fenderR').setAttribute('d',`M ${-fr} 0 A ${fr} ${fr} 0 0 1 ${c.toFixed(2)} ${s.toFixed(2)}`);
+  const c2=Math.cos(-155*Math.PI/180)*fr, s2=Math.sin(-155*Math.PI/180)*fr;
+  $('fenderF').setAttribute('d',`M ${(150+c2).toFixed(2)} ${s2.toFixed(2)} A ${fr} ${fr} 0 0 1 ${(150+c).toFixed(2)} ${s.toFixed(2)}`);
+  $('stayR').setAttribute('x2',c.toFixed(2)); $('stayR').setAttribute('y2',s.toFixed(2));
+  $('stayF').setAttribute('x2',(150+c).toFixed(2)); $('stayF').setAttribute('y2',s.toFixed(2));
+  $('shadowR').setAttribute('rx',(R*SCALE*0.82).toFixed(1));
+  $('shadowF').setAttribute('rx',(R*SCALE*0.82).toFixed(1));
+}
+
+/* ═══════════════════ two-bone IK for pedalling legs ═══════════════════ */
+function solveLeg(H,P){
+  let dx=P.x-H.x, dy=P.y-H.y, d=Math.hypot(dx,dy);
+  d=Math.max(1,Math.min(d,L1+L2-0.5));
+  const a=(L1*L1-L2*L2+d*d)/(2*d);
+  const h=Math.sqrt(Math.max(0,L1*L1-a*a));
+  const mx=H.x+a*dx/(Math.hypot(dx,dy)||1), my=H.y+a*dy/(Math.hypot(dx,dy)||1);
+  const k1={x:mx+h*dy/(Math.hypot(dx,dy)||1), y:my-h*dx/(Math.hypot(dx,dy)||1)};
+  const k2={x:mx-h*dy/(Math.hypot(dx,dy)||1), y:my+h*dx/(Math.hypot(dx,dy)||1)};
+  return k1.x>=k2.x?k1:k2; /* knee points forward */
+}
+
+/* ═══════════════════ audio (bell + whoosh) ═══════════════════ */
+let AC=null;
+function ctx(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } if(AC&&AC.state==='suspended')AC.resume(); return AC; }
+function playBell(){
+  if(!soundOn) return; const ac=ctx(); if(!ac) return;
+  const t=ac.currentTime;
+  [[1568,.4],[2093,.22],[3136,.1],[4200,.05]].forEach(p=>{
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type='sine'; o.frequency.value=p[0];
+    g.gain.setValueAtTime(p[1],t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.9);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+1);
+  });
+  const nb=ac.createBuffer(1,ac.sampleRate*0.03,ac.sampleRate), d=nb.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+  const ns=ac.createBufferSource(), ng=ac.createGain(), hp=ac.createBiquadFilter();
+  ns.buffer=nb; hp.type='highpass'; hp.frequency.value=2500; ng.gain.value=0.12;
+  ns.connect(hp); hp.connect(ng); ng.connect(ac.destination); ns.start(t);
+}
+function playWhoosh(){
+  if(!soundOn) return; const ac=ctx(); if(!ac) return;
+  const t=ac.currentTime, len=ac.sampleRate*0.3;
+  const nb=ac.createBuffer(1,len,ac.sampleRate), d=nb.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/len);
+  const ns=ac.createBufferSource(), bp=ac.createBiquadFilter(), g=ac.createGain();
+  ns.buffer=nb; bp.type='bandpass'; bp.Q.value=1.2;
+  bp.frequency.setValueAtTime(380,t); bp.frequency.exponentialRampToValueAtTime(1600,t+0.28);
+  g.gain.value=0.16;
+  ns.connect(bp); bp.connect(g); g.connect(ac.destination); ns.start(t);
+}
+
+/* ═══════════════════ bell FX ═══════════════════ */
+const fx=[]; let bellWiggle=0;
+function ringBell(){
+  playBell(); bellWiggle=1;
+  const g=$('fx');
+  for(let i=0;i<2;i++){
+    const c=el('circle',{cx:116.5,cy:-79,r:6,fill:'none',stroke:'#ffb347','stroke-width':2.4-i*0.8},g);
+    fx.push({el:c,t0:performance.now()/1000+i*0.12,dur:0.65,kind:'ring'});
+  }
+  const tx=el('text',{x:116,y:-96,'text-anchor':'middle','font-size':19,'font-weight':'700',fill:'#ffb347',stroke:'#4a3b32','stroke-width':0.6},g);
+  tx.textContent='叮～';
+  fx.push({el:tx,t0:performance.now()/1000,dur:0.9,kind:'text'});
+}
+$('bellHit').addEventListener('click',e=>{e.stopPropagation();ringBell();});
+
+/* ═══════════════════ toasts ═══════════════════ */
+function toast(msg,type){
+  const box=$('toasts'), t=document.createElement('div');
+  t.className='toast'+(type?' '+type:''); t.textContent=msg;
+  box.appendChild(t);
+  setTimeout(()=>{t.classList.add('out'); setTimeout(()=>t.remove(),320);},2600);
+}
+
+/* ═══════════════════ export current state ═══════════════════ */
+function currentSVG(){
+  const clone=svg.cloneNode(true);
+  clone.setAttribute('xmlns',svgNS);
+  clone.setAttribute('xmlns:xlink','http://www.w3.org/1999/xlink');
+  clone.setAttribute('width','1200'); clone.setAttribute('height','675');
+  clone.removeAttribute('role'); clone.removeAttribute('aria-label');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(clone);
+}
+function download(blob,name){
+  const a=document.createElement('a'), url=URL.createObjectURL(blob);
+  a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+$('btnSvg').addEventListener('click',()=>{
+  download(new Blob([currentSVG()],{type:'image/svg+xml;charset=utf-8'}),'pelican-rider.svg');
+  toast('✓ SVG 已下载 — 保留了此刻的画面','');
+});
+$('btnCopy').addEventListener('click',async()=>{
+  const code=currentSVG();
+  try{ await navigator.clipboard.writeText(code); toast('✓ SVG 代码已复制到剪贴板',''); }
+  catch(e){
+    const ta=document.createElement('textarea'); ta.value=code; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('✓ SVG 代码已复制',''); }
+    catch(e2){ toast('复制失败，请改用下载','warn'); }
+    ta.remove();
+  }
+});
+$('btnPng').addEventListener('click',()=>{
+  const blob=new Blob([currentSVG()],{type:'image/svg+xml;charset=utf-8'});
+  const url=URL.createObjectURL(blob), img=new Image();
+  img.onload=()=>{
+    try{
+      const cv=document.createElement('canvas'); cv.width=2400; cv.height=1350;
+      const cx=cv.getContext('2d'); cx.drawImage(img,0,0,2400,1350);
+      cv.toBlob(b=>{ if(b){download(b,'pelican-rider@2x.png'); toast('✓ PNG（2400×1350）已导出','');} else toast('PNG 导出失败，请改用 SVG','warn'); URL.revokeObjectURL(url); },'image/png');
+    }catch(e){ toast('PNG 导出失败，请改用 SVG','warn'); URL.revokeObjectURL(url); }
+  };
+  img.onerror=()=>{ toast('PNG 导出失败，请改用 SVG','warn'); URL.revokeObjectURL(url); };
+  img.src=url;
+});
+
+/* ═══════════════════ controls wiring ═══════════════════ */
+function paintRange(inp){
+  const p=(inp.value-inp.min)/(inp.max-inp.min)*100;
+  inp.style.setProperty('--p',p+'%');
+}
+function bindRange(id,key,fmt,after){
+  const inp=$(id);
+  inp.addEventListener('input',()=>{
+    S[key]=parseFloat(inp.value); paintRange(inp);
+    if(fmt) $(fmt.el).textContent=fmt.f(S[key]);
+    if(after) after();
+  });
+  paintRange(inp);
+}
+bindRange('inSpeed','speed',{el:'vSpeed',f:v=>v.toFixed(1)+'×'});
+bindRange('inWheel','wheel',{el:'vWheel',f:v=>v+'px'},()=>buildWheel(S.wheel));
+bindRange('inBounce','bounce',{el:'vBounce',f:v=>Math.round(v*100)+'%'});
+bindRange('inWind','wind',{el:'vWind',f:v=>Math.round(v*100)+'%'});
+bindRange('inTime','time',null,()=>applyTime(S.time));
+bindRange('inZoom','zoom',{el:'vZoom',f:v=>v.toFixed(2)+'×'},applyZoom);
+$('inAuto').addEventListener('change',e=>{S.auto=e.target.checked;});
+$('inLines').addEventListener('change',e=>{S.lines=e.target.checked;});
+document.querySelectorAll('.theme-chip').forEach(b=>b.addEventListener('click',()=>{applyTheme(b.dataset.theme); toast('🎨 已切换：'+b.querySelector('.nm').textContent,'info');}));
+function applyZoom(){ world.setAttribute('transform',`translate(600 430) scale(${S.zoom}) translate(-600 -430)`); }
+
+function syncUI(){
+  $('inSpeed').value=S.speed; $('vSpeed').textContent=S.speed.toFixed(1)+'×';
+  $('inWheel').value=S.wheel; $('vWheel').textContent=S.wheel+'px';
+  $('inBounce').value=S.bounce; $('vBounce').textContent=Math.round(S.bounce*100)+'%';
+  $('inWind').value=S.wind; $('vWind').textContent=Math.round(S.wind*100)+'%';
+  $('inTime').value=S.time;
+  $('inZoom').value=S.zoom; $('vZoom').textContent=S.zoom.toFixed(2)+'×';
+  $('inAuto').checked=S.auto; $('inLines').checked=S.lines;
+  ['inSpeed','inWheel','inBounce','inWind','inTime','inZoom'].forEach(id=>paintRange($(id)));
+}
+$('btnRandom').addEventListener('click',()=>{
+  S.speed=+(0.3+Math.random()*2.1).toFixed(2);
+  S.wheel=Math.round(30+Math.random()*16);
+  S.bounce=+Math.random().toFixed(2);
+  S.wind=+Math.random().toFixed(2);
+  S.time=+Math.random().toFixed(3);
+  S.zoom=+(0.85+Math.random()*0.4).toFixed(2);
+  S.lines=Math.random()>0.3;
+  const names=Object.keys(THEMES);
+  applyTheme(names[Math.floor(Math.random()*names.length)]);
+  applyTime(S.time); buildWheel(S.wheel); applyZoom(); syncUI();
+  playWhoosh();
+  const b=$('btnRandom'); b.classList.remove('spin'); void b.offsetWidth; b.classList.add('spin');
+  toast('🎲 随机生成了一套新造型','info');
+});
+$('btnReset').addEventListener('click',()=>{
+  Object.assign(S,DEFAULTS);
+  applyTheme(S.theme); applyTime(S.time); buildWheel(S.wheel); applyZoom(); syncUI();
+  toast('↺ 已回到默认的黄金时刻','info');
+});
+$('btnBell').addEventListener('click',ringBell);
+
+function setPaused(p){
+  paused=p;
+  $('stage').classList.toggle('paused',p);
+  $('pauseBtn').textContent=p?'▶ 继续':'⏸ 暂停';
+}
+$('pauseBtn').addEventListener('click',()=>setPaused(!paused));
+$('soundBtn').addEventListener('click',()=>{
+  soundOn=!soundOn;
+  $('soundBtn').setAttribute('aria-pressed',String(soundOn));
+  $('soundLabel').textContent=soundOn?'🔔 音效：开':'🔕 音效：关';
+  if(soundOn){ ctx(); playBell(); }
+});
+window.addEventListener('keydown',e=>{
+  if(/(INPUT|SELECT|TEXTAREA|BUTTON)/.test(e.target.tagName)) return;
+  if(e.code==='Space'){ e.preventDefault(); setPaused(!paused); }
+  else if(e.key==='b'||e.key==='B'){ ringBell(); }
+  else if(e.key==='r'||e.key==='R'){ $('btnRandom').click(); }
+});
+
+/* ═══════════════════ animation loop ═══════════════════ */
+let dist=0, mt=0, chainOff=0, last=performance.now()/1000;
+let nextBlink=2.5, blinkLeft=0, hudTimer=0;
+const cloudState=[...document.querySelectorAll('.cloud')].map(c=>({el:c,x:+c.dataset.x,y:+c.dataset.y}));
+const boatState={x:1150};
+const frondGroups=[...document.querySelectorAll('#palmFrondsA .frond')];
+const rotR=$('wheelR').querySelector('.rot'), rotF=$('wheelF').querySelector('.rot');
+
+function frame(nowMs){
+  const now=nowMs/1000;
+  let dt=Math.min(0.05,now-last); last=now;
+  if(!paused){
+    mt+=dt;
+    dist+=220*S.speed*dt;
+    chainOff-=dt*S.speed*95;
+    if(S.auto){ S.time=(S.time+dt*0.012)%1; applyTime(S.time); $('inTime').value=S.time; paintRange($('inTime')); }
+  }
+  const R=S.wheel, worldDist=dist*SCALE;
+  const wheelDeg=(dist/R)*180/Math.PI;
+  const crank=dist/R*GEAR;
+  const bob=Math.sin(crank*2)*2.3*S.bounce;
+  const jitter=(Math.sin(dist*0.09)*1.1+Math.sin(dist*0.023)*0.6)*S.bounce;
+
+  /* rider placement */
+  rider.setAttribute('transform',`translate(${TX} ${(GROUND-R*SCALE+jitter).toFixed(2)}) scale(${SCALE})`);
+  rotR.setAttribute('transform',`rotate(${wheelDeg.toFixed(2)})`);
+  rotF.setAttribute('transform',`rotate(${wheelDeg.toFixed(2)})`);
+  $('chain').setAttribute('stroke-dashoffset',chainOff.toFixed(1));
+
+  /* cranks & pedals */
+  const P1={x:BB.x+Math.cos(crank)*CRANK, y:BB.y+Math.sin(crank)*CRANK};
+  const P2={x:BB.x-Math.cos(crank)*CRANK, y:BB.y-Math.sin(crank)*CRANK};
+  $('crankArmN').setAttribute('x2',P1.x.toFixed(2)); $('crankArmN').setAttribute('y2',P1.y.toFixed(2));
+  $('crankArmF').setAttribute('x2',P2.x.toFixed(2)); $('crankArmF').setAttribute('y2',P2.y.toFixed(2));
+  $('pedalN').setAttribute('transform',`translate(${P1.x.toFixed(2)} ${P1.y.toFixed(2)})`);
+  $('pedalF').setAttribute('transform',`translate(${P2.x.toFixed(2)} ${P2.y.toFixed(2)})`);
+
+  /* legs via IK */
+  const K1=solveLeg(HIP_N,P1), K2=solveLeg(HIP_F,P2);
+  $('legNear').setAttribute('d',`M ${HIP_N.x} ${HIP_N.y} L ${K1.x.toFixed(2)} ${K1.y.toFixed(2)} L ${P1.x.toFixed(2)} ${P1.y.toFixed(2)}`);
+  $('legFar').setAttribute('d',`M ${HIP_F.x} ${HIP_F.y} L ${K2.x.toFixed(2)} ${K2.y.toFixed(2)} L ${P2.x.toFixed(2)} ${P2.y.toFixed(2)}`);
+  $('footNear').setAttribute('transform',`translate(${P1.x.toFixed(2)} ${P1.y.toFixed(2)}) rotate(${(Math.sin(crank)*9-3).toFixed(1)})`);
+  $('footFar').setAttribute('transform',`translate(${P2.x.toFixed(2)} ${P2.y.toFixed(2)}) rotate(${(Math.sin(crank+Math.PI)*9-3).toFixed(1)})`);
+
+  /* pelican life */
+  $('pelican').setAttribute('transform',`translate(0 ${bob.toFixed(2)}) rotate(${(bob*0.32).toFixed(2)} 44 -100)`);
+  $('headG').setAttribute('transform',`translate(0 ${(Math.sin(crank*2-0.6)*1.6*S.bounce).toFixed(2)})`);
+  $('tail').setAttribute('transform',`rotate(${(Math.sin(crank*2)*3*S.bounce).toFixed(2)} 14 -100)`);
+  $('wingG').setAttribute('transform',`rotate(${(Math.sin(crank*2-0.4)*1.3*S.bounce).toFixed(2)} 57 -106)`);
+  $('fish').setAttribute('transform',`translate(146 -142) rotate(${(Math.sin(mt*3.1)*14).toFixed(1)})`);
+  const sag=5+2.6*Math.sin(crank*2-0.9)*(0.3+S.bounce)+S.wind*1.2;
+  $('pouch').setAttribute('d',`M 107 -150 C 122 ${(-136+sag).toFixed(2)} 150 ${(-134+sag).toFixed(2)} 169 -147 C 150 -149 124 -150 107 -150 Z`);
+
+  /* scarf ribbons in the wind */
+  const A=(3+9*S.wind+S.speed*1.4)*(0.55+0.45*S.bounce+0.3);
+  const w1=Math.sin(mt*7)*A, w2=Math.sin(mt*7+1.3)*A*1.4, w3=Math.sin(mt*7+2.6)*A*1.9;
+  $('scarf1').setAttribute('d',`M 73 -119 C 52 ${(-121+w1).toFixed(2)} 30 ${(-113+w2).toFixed(2)} 6 ${(-119+w3).toFixed(2)} L 4 ${(-113+w3).toFixed(2)} C 28 ${(-107+w2).toFixed(2)} 50 ${(-113+w1).toFixed(2)} 73 -112 Z`);
+  const v1=Math.sin(mt*7+0.7)*A*0.8, v2=Math.sin(mt*7+2.0)*A*1.1, v3=Math.sin(mt*7+3.3)*A*1.5;
+  $('scarf2').setAttribute('d',`M 73 -116 C 56 ${(-112+v1).toFixed(2)} 40 ${(-104+v2).toFixed(2)} 22 ${(-108+v3).toFixed(2)} L 21 ${(-103+v3).toFixed(2)} C 38 ${(-99+v2).toFixed(2)} 54 ${(-106+v1).toFixed(2)} 73 -110 Z`);
+
+  /* blink */
+  if(now>nextBlink){ blinkLeft=0.13; nextBlink=now+2.5+Math.random()*4; }
+  if(blinkLeft>0){ blinkLeft-=dt; }
+  const es=blinkLeft>0?0.12:1;
+  $('eyeG').setAttribute('transform',`translate(104 -159) scale(1 ${es}) translate(-104 159)`);
+
+  /* scrolling world */
+  $('roadScroll').setAttribute('transform',`translate(${(-(worldDist%1200)).toFixed(2)} 0)`);
+  $('fgScroll').setAttribute('transform',`translate(${(-(worldDist*1.28%1500)).toFixed(2)} 0)`);
+  $('wave1').setAttribute('transform',`translate(${(-(mt*(18+S.wind*14)%120)).toFixed(2)} 0)`);
+  $('wave2').setAttribute('transform',`translate(${(-(mt*(11+S.wind*9)%96)).toFixed(2)} 0)`);
+  cloudState.forEach(c=>{
+    if(!paused){ c.x-=(6+S.wind*30)*dt*c.el.getAttribute('opacity'); if(c.x<-160)c.x=1360; }
+    c.el.setAttribute('transform',`translate(${c.x.toFixed(1)} ${c.y})`);
+  });
+  if(!paused){ boatState.x-=(10+S.wind*8)*dt; if(boatState.x<-60)boatState.x=1300; }
+  $('boat').setAttribute('transform',`translate(${boatState.x.toFixed(1)} ${(402+Math.sin(mt*1.4)*2.4).toFixed(2)}) rotate(${(Math.sin(mt*1.4)*2).toFixed(2)})`);
+  gulls.forEach(g=>{
+    if(!paused){ g.x-=(26+S.wind*44)*dt*g.s; if(g.x<-60){g.x=1300; g.y=70+Math.random()*180;} }
+    const flap=Math.sin(mt*9+g.ph)*26;
+    g.g.setAttribute('transform',`translate(${g.x.toFixed(1)} ${(g.y+Math.sin(mt*1.1+g.ph)*6).toFixed(1)}) scale(${g.s})`);
+    g.wl.setAttribute('transform',`rotate(${flap.toFixed(1)})`);
+    g.wr.setAttribute('transform',`rotate(${(-flap).toFixed(1)})`);
+  });
+  frondGroups.forEach((f,i)=>{
+    f.setAttribute('transform',`rotate(${(+f.dataset.a+Math.sin(mt*1.6+i)* (3+S.wind*7)).toFixed(2)})`);
+  });
+  $('grassA').setAttribute('transform',`translate(950 664) rotate(${(Math.sin(mt*2.2)*(2+S.wind*5)).toFixed(2)})`);
+  $('sunRays').setAttribute('transform',`rotate(${(mt*4).toFixed(2)})`);
+  $('lhBeam').setAttribute('transform',`rotate(${(Math.sin(mt*0.5)*16).toFixed(2)} 1052 291)`);
+  starEls.forEach(s=>{ s.el.setAttribute('opacity',(0.45+0.55*Math.abs(Math.sin(mt*s.sp+s.ph))).toFixed(2)); });
+  sparkEls.forEach(s=>{ s.el.setAttribute('opacity',(0.15+0.7*Math.abs(Math.sin(mt*2+s.ph))).toFixed(2)); });
+
+  /* speed lines */
+  const lo=S.lines?Math.min(1,Math.max(0,(S.speed-0.15)/1.6))*0.65:0;
+  lineEls.forEach(l=>{
+    const x=400-((worldDist*1.35+l.ph)%260);
+    l.el.setAttribute('x1',(x-l.len).toFixed(1)); l.el.setAttribute('x2',x.toFixed(1));
+    l.el.setAttribute('opacity',(lo*(0.35+0.65*Math.abs(Math.sin(l.ph)))).toFixed(2));
+  });
+
+  /* bell wiggle + fx */
+  bellWiggle*=Math.exp(-dt*3.4);
+  $('bellG').setAttribute('transform',`rotate(${(Math.sin(now*46)*16*bellWiggle).toFixed(2)} 116.5 -75.5)`);
+  for(let i=fx.length-1;i>=0;i--){
+    const f=fx[i], p=(now-f.t0)/f.dur;
+    if(p<0){ f.el.setAttribute('opacity','0'); continue; }
+    if(p>=1){ f.el.remove(); fx.splice(i,1); continue; }
+    if(f.kind==='ring'){
+      f.el.setAttribute('r',(6+30*p).toFixed(1));
+      f.el.setAttribute('opacity',(0.75*(1-p)).toFixed(2));
+    }else{
+      f.el.setAttribute('y',(-96-34*p).toFixed(1));
+      f.el.setAttribute('opacity',(1-p).toFixed(2));
+    }
+  }
+
+  /* HUD */
+  hudTimer+=dt;
+  if(hudTimer>0.25){
+    hudTimer=0;
+    $('hudSpeed').textContent=(S.speed*21.6).toFixed(1);
+    $('hudDist').textContent=Math.round(worldDist/45);
+    $('hudCad').textContent=Math.round((220*S.speed/R*GEAR)*9.5493);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ═══════════════════ init ═══════════════════ */
+applyTheme(S.theme);
+applyTime(S.time);
+buildWheel(S.wheel);
+applyZoom();
+syncUI();
+requestAnimationFrame(t=>{ last=t/1000; requestAnimationFrame(frame); });
+})();
+</script>
+</body>
+</html>
