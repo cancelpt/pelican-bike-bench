@@ -19,6 +19,7 @@ export const SITE = {
     pickle: "https://opencode.ai",
     flint: "https://opencode.ai",
     nemotron: "https://build.nvidia.com",
+    baidu: "https://ernie.baidu.com",
 };
 export const DISPLAY = {
     "deepseek-v4flash": "deepseek-v4-flash",
@@ -33,6 +34,7 @@ export const FAM_LAB = {
     deepseek: "DeepSeek", kimi: "Moonshot", seed: "ByteDance", grok: "xAI", hy: "Tencent",
     longcat: "LongCat", minimax: "MiniMax", mimo: "MiMo", muse: "Meta", step: "StepFun",
     space: "Stealth", beam: "Reflection AI", pickle: "Big Pickle", flint: "Flint", nemotron: "NVIDIA",
+    baidu: "百度",
 };
 export const famOf = (model) => {
     const m = String(model).toLowerCase();
@@ -45,6 +47,7 @@ export const famOf = (model) => {
         ["minimax", "minimax"], ["mimo", "mimo"], ["muse", "muse"],
         ["step", "step"], ["space", "space"], ["beam", "beam"],
         ["big-pickle", "pickle"], ["pickle", "pickle"], ["flint", "flint"], ["nemotron", "nemotron"],
+        ["ernie", "baidu"], ["baidu", "baidu"],
     ];
     for (const [pre, fam] of rules)
         if (m.startsWith(pre))
@@ -56,6 +59,7 @@ export const DEF_BADGE = {
     deepseek: "DeepSeek", kimi: "Moonshot", seed: "Volcengine", grok: "xAI", hy: "Tencent",
     longcat: "LongCat", minimax: "MiniMax", mimo: "MiMo", muse: "Meta", step: "StepFun",
     beam: "Reflection AI", pickle: "Big Pickle", flint: "Flint", nemotron: "NVIDIA",
+    baidu: "百度",
 };
 export const BADGE_SITE = {
     OpenAI: "https://openai.com",
@@ -77,6 +81,7 @@ export const BADGE_SITE = {
     "Big Pickle": "https://opencode.ai",
     Flint: "https://opencode.ai",
     NVIDIA: "https://build.nvidia.com",
+    百度: "https://ernie.baidu.com",
 };
 export const TOOL_SITE = {
     "Claude Code": "https://claude.com/",
